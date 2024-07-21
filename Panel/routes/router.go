@@ -1,58 +1,31 @@
 package routes
 
 import (
-    // "go-ad-panel/controllers"
-    "github.com/gin-gonic/gin"
-    "net/http"
-    // "go-ad-panel/config"
+	"github.com/gin-gonic/gin"
+	"go-ad-panel/controllers"
+	"go-ad-panel/repositories"
+	"gorm.io/gorm"
 )
 
-func SetupRouter() *gin.Engine {
-    r := gin.Default()
-    // db := config.DB
-    r.GET("", func(context *gin.Context) {
-		context.JSON(http.StatusOK, "welcome home")
-	})
+func SetupRouter(db *gorm.DB) *gin.Engine {
+	router := gin.Default()
 
-	r.NoRoute(func(c *gin.Context) {
-		c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
-	})
+	// Initialize the repository
+	publisherRepo := repositories.PublisherRepositoryImpl{Db: db}
 
-    // advertiserRepo := repositories.NewAdvertiserRepository(db)
-    // advertiserCtrl := &controllers.AdvertiserController{Repository: advertiserRepo}
-    // r.GET("/panel/advertiser/:id", advertiserCtrl.GetAdvertiser)
-    // r.POST("/panel/advertiser", advertiserCtrl.CreateAdvertiser)
-    return r
+	publisherController := controllers.PublisherController{Repo: publisherRepo}
+
+	v1 := router.Group("/api/v1")
+	{
+		publishers := v1.Group("/publishers")
+		{
+			publishers.POST("", publisherController.CreatePublisher)
+			publishers.GET("/:id", publisherController.GetPublisherByID)
+			publishers.PUT("/:id", publisherController.UpdatePublisher)
+			publishers.DELETE("/:id", publisherController.DeletePublisher)
+			publishers.GET("", publisherController.GetAllPublishers)
+		}
+	}
+
+	return router
 }
-
-
-
-// package router
-
-// import (
-// 	"github.com/gin-gonic/gin"
-// 	"net/http"
-// 	"practice-api-gin-one/controller"
-// )
-
-// func NewRouter(tagController *controller.TagController) *gin.Engine {
-// 	service := gin.Default()
-
-// 	service.GET("", func(context *gin.Context) {
-// 		context.JSON(http.StatusOK, "welcome home")
-// 	})
-
-// 	service.NoRoute(func(c *gin.Context) {
-// 		c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
-// 	})
-
-// 	router := service.Group("/api")
-// 	tagRouter := router.Group("/tag")
-// 	tagRouter.GET("", tagController.FindAll)
-// 	tagRouter.GET("/:tagId", tagController.FindById)
-// 	tagRouter.POST("", tagController.Create)
-// 	tagRouter.PATCH("/:tagId", tagController.Update)
-// 	tagRouter.DELETE("/:tagId", tagController.Delete)
-
-// 	return service
-// }
