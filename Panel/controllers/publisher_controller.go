@@ -9,10 +9,9 @@ import (
 )
 
 type PublisherController struct {
-	Repo repositories.PublisherRepositoryImpl
+	Repo repositories.PublisherRepository
 }
 
-// CreatePublisher handles the creation of a new publisher
 func (ctrl PublisherController) CreatePublisher(c *gin.Context) {
 	var publisher models.Publisher
 	if err := c.ShouldBindJSON(&publisher); err != nil {

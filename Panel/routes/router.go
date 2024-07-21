@@ -10,8 +10,7 @@ import (
 func SetupRouter(db *gorm.DB) *gin.Engine {
 	router := gin.Default()
 
-	// Initialize the repository
-	publisherRepo := repositories.PublisherRepositoryImpl{Db: db}
+	publisherRepo := repositories.PublisherRepository{Db: db}
 
 	publisherController := controllers.PublisherController{Repo: publisherRepo}
 
