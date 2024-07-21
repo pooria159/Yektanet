@@ -1,11 +1,8 @@
 package config
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
-	"os"
-
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	_ "github.com/lib/pq"
