@@ -2,23 +2,21 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	_ "github.com/lib/pq"
+	"log"
 )
 
 var DB *gorm.DB
 
 func Connect() {
-	dsn := "user=youruser dbname=mydb password=1234 sslmode=disable"
+	dsn := "user=postgres dbname=postgres password=postgres sslmode=disable"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("failed to connect to database: ", err)
 	}
 	DB = db
 }
-
 
 func Ping() {
 	sqlDB, err := DB.DB()
