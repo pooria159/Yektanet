@@ -1,0 +1,60 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*/.idea/
+*/.vscode/
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Directories
+_build/
+bin/
+pkg/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# IDE directories
+.idea/
+.vscode/
+*.swp
+
+# Logs and databases
+*.log
+*.db
+*.sqlite
+*.sqlite3
+
+# Dependency directories
+vendor/
+
+# Goland IDE specific
+*.iml
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Test binary, results and coverage reports
+*.test
+*.cover
+*.prof
+
+# Temporary files created by Go tools
+*.test
+*.prof
+*.sum
+
+# Ctags
+tags
+
+# Custom Go and Gin files
+# Add any additional custom files or directories specific to your project
