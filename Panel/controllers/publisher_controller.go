@@ -26,7 +26,6 @@ func (ctrl PublisherController) CreatePublisher(c *gin.Context) {
 	c.JSON(http.StatusCreated, publisher)
 }
 
-// GetPublisherByID handles fetching a publisher by its ID
 func (ctrl PublisherController) GetPublisherByID(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -71,7 +70,6 @@ func (ctrl PublisherController) DeletePublisher(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
-// GetAllPublishers handles fetching all publishers
 func (ctrl PublisherController) GetAllPublishers(c *gin.Context) {
 	publishers, err := ctrl.Repo.FindAll()
 	if err != nil {
