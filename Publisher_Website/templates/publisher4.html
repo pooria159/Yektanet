@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Publisher4</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <style>
+      body, h1, h2, h3, h4, h5, h6 {
+        font-family: "Lato", sans-serif;
+      }
+      .w3-bar, h1, button {
+        font-family: "Montserrat", sans-serif;
+      }
+      header {
+        position: relative;
+        background-image: url("/static/image4.jpg");
+        background-size: cover;
+        background-position: center;
+        padding: 60px 16px;
+        color: white;
+        text-align: center;
+      }
+      header::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.7);
+      }
+      header h1, header p {
+        position: relative;
+        z-index: 1;
+      }
+      body {
+        overflow: hidden;
+      }
+      .w3-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      .ad-box {
+        width: 400px;
+        height: 300px;
+        background-color: #f1f1f1;
+        border: 2px dashed #ccc;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-size: 20px;
+        margin-left: 90px;
+        margin-top: 50px;
+        position: relative;
+        text-align: center;
+      }
+      .click-here {
+        padding: 10px 20px;
+        background-color: rgba(18, 141, 14, 0.7);
+        color: white;
+        font-size: 18px;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none;
+        animation: pulse 1s infinite;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      @keyframes pulse {
+        0% {
+          transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.1);
+        }
+        100% {
+          transform: translate(-50%, -50%) scale(1);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1 class="w3-margin w3-jumbo">Publisher Panel Page</h1>
+      <p class="w3-xlarge">Publisher 4</p>
+    </header>
+
+    <div class="w3-row-padding w3-padding-32 w3-container" style="height: calc(100vh - 320px)">
+      <div class="w3-content">
+        <div class="w3-twothird">
+          <h1>Academic Decline in Universities</h1>
+          <h5 class="w3-padding-16">
+            Recent reports have highlighted a troubling trend of academic decline in universities across the country. Various factors have been identified as contributors to this issue, including the increasing reliance on remote learning, budget cuts, and the mental health challenges faced by students.
+
+            Professors and educators are expressing concern over the decline in student performance and engagement. The shift to online classes, while necessary during the pandemic, has revealed gaps in the education system. Many students struggle with the lack of in-person interaction and the distractions of studying from home.
+
+            Additionally, financial constraints have led to reduced funding for academic programs and resources, impacting the quality of education. Universities are working to address these challenges by implementing support systems for students, enhancing online learning tools, and seeking alternative funding sources.
+          </h5>
+        </div>
+
+        <div class="w3-third w3-center">
+          <div class="ad-box" id="adBox">
+            Advertisements will be placed here
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Simulate script adding ad content
+      document.addEventListener("DOMContentLoaded", function() {
+        const adBox = document.getElementById('adBox');
+        adBox.innerHTML = `
+          <img src="https://via.placeholder.com/300x200" alt="Ad Image">
+          <h3>Ad Title</h3>
+          <a href="#" class="click-here" onclick="sendPostRequest(event)">Click here</a>
+        `;
+      });
+
+      function sendPostRequest(event) {
+        event.preventDefault();
+        fetch('https://example.com/api/click', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ ad: 'Ad Title', clickedAt: new Date().toISOString() })
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Success:', data);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+      }
+    </script>
+  </body>
+</html>
