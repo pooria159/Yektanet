@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Publisher Panel</title>
@@ -19,18 +19,17 @@
         display: flex;
         justify-content: space-between;
         width: 100%;
-        border: 1px solid #ccc;
-
+        padding: 10px;
       }
-      .info-container, .withdraw-container {
+      .info-container,
+      .withdraw-container {
         flex: 1;
         margin: 10px;
         padding: 30px;
         background-color: #f9f9f9;
-        border: 1px solid #ccc;
-
       }
-      .info-container h2, .withdraw-container h2 {
+      .info-container h2,
+      .withdraw-container h2 {
         margin-top: 0;
       }
       .code-container {
@@ -44,7 +43,7 @@
         top: 25px;
         right: 20px;
         background-color: #6e6969;
-        color: white;
+        color: #f9f9f9;
         border: none;
         padding: 5px 10px;
         cursor: pointer;
@@ -59,8 +58,6 @@
         padding: 10px;
         background-color: #fff;
         position: relative;
-        border: 1px solid #ccc;
-        margin: auto;
       }
       pre code {
         font-size: 12px;
@@ -84,88 +81,66 @@
         cursor: pointer;
       }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <header>
-            <h1>Publisher Panel</h1>
-        </header>
-        <div class="content">
-            <section class="info-container">
-                <h2>Publisher Information</h2>
-                <p><strong>Name:</strong> {{.publisher.Name}}</p>
-                <p>
-                  <strong>Website:</strong>
-                  <a href="{{.publisher.Website}}">{{.publisher.Website}}</a>
-                </p>
-                <p><strong>Credit:</strong> ${{.publisher.Credit}}</p>
-            </section>
-            <section class="withdraw-container">
-                <h2>Withdraw</h2>
-                <form action="/publisher/{{.publisher.ID}}/withdraw" method="post">
-                  <label for="amount">Amount:</label>
-                  <input type="text" id="amount" name="amount" required />
-                  <div class="amount-options">
-                    <button type="button" onclick="setAmount(10)">10</button>
-                    <button type="button" onclick="setAmount(100)">100</button>
-                    <button type="button" onclick="setAmount(200)">200</button>
-                    <button type="button" onclick="setAmount(500)">500</button>
-                    <button type="button" onclick="setAmount(1000)">1000</button>
-                  </div>
-                  <button type="submit">Withdraw</button>
-                </form>
-            </section>
-        </div>
-        <section class="code-container">
-            <div class="code-box">
-                <button class="copy-button" onclick="copyCode()">Copy</button>
-                <pre id="code"><code class="language-html">&lt;div id="ad-container"&gt;&lt;/div&gt;
-&lt;script&gt;
-(function() {
-    var adContainer = document.getElementById('ad-container');
-    
-    function fetchAd() {
-        fetch('http://adserver.local/api/ads')
-            .then(response => response.json())
-            .then(data => {
-                if (data && data.length > 0) {
-                    var ad = data[0];
-                    var adContent = '&lt;div class="ad-container"&gt;' +
-                                    '&lt;img src="' + ad.imageUrl + '" alt="' + ad.title + '"&gt;' +
-                                    '&lt;p&gt;' + ad.title + '&lt;/p&gt;' +
-                                    '&lt;a href="' + ad.clickUrl + '" target="_blank"&gt;Click here&lt;/a&gt;' +
-                                    '&lt;/div&gt;';
-                    adContainer.innerHTML = adContent;
-                    
-                    fetch(ad.impressionUrl);
-                }
-            })
-            .catch(error => console.error('Error fetching ad:', error));
-    }
-    
-    fetchAd();
-})();
-&lt;/script&gt;</code></pre>
-            </div>
+      <header>
+        <h1>Publisher Panel</h1>
+      </header>
+      <div class="content">
+        <section class="info-container">
+          <h2>Publisher Information</h2>
+          <p><strong>Name:</strong> {{.publisher.Name}}</p>
+          <p>
+            <strong>Website:</strong>
+            <a href="{{.publisher.Website}}">{{.publisher.Website}}</a>
+          </p>
+          <p><strong>Credit:</strong> ${{.publisher.Credit}}</p>
         </section>
+        <section class="withdraw-container">
+          <h2>Withdraw</h2>
+          <form action="/publisher/{{.publisher.ID}}/withdraw" method="post">
+            <label for="amount">Amount:</label>
+            <input type="text" id="amount" name="amount" required />
+            <div class="amount-options">
+              <button type="button" onclick="setAmount(10)">10</button>
+              <button type="button" onclick="setAmount(100)">100</button>
+              <button type="button" onclick="setAmount(200)">200</button>
+              <button type="button" onclick="setAmount(500)">500</button>
+              <button type="button" onclick="setAmount(1000)">1000</button>
+            </div>
+            <button type="submit">Withdraw</button>
+          </form>
+        </section>
+      </div>
+      <section class="code-container">
+        <div class="code-box">
+          <button class="copy-button" onclick="copyCode()">Copy</button>
+          <pre
+            id="code"
+          ><code class="language-html">&lt;div id="ad-container"&gt;&lt;/div&gt;
+                    &lt;script src="http://localhost:8080/static/fetchAd.js?publisherID={{.publisher.ID}}"&gt;&lt;/script&gt;</code></pre>
+        </div>
+      </section>
+
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-markup.min.js"></script>
     <script>
-        function copyCode() {
-            const codeElement = document.getElementById("code").innerText;
-            const textarea = document.createElement("textarea");
-            textarea.value = codeElement;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand("copy");
-            document.body.removeChild(textarea);
-            alert("Code copied to clipboard");
-        }
+      function copyCode() {
+        const codeElement = document.getElementById("code").innerText;
+        const textarea = document.createElement("textarea");
+        textarea.value = codeElement;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+        alert("Code copied to clipboard");
+      }
 
-        function setAmount(value) {
-            document.getElementById('amount').value = value;
-        }
+      function setAmount(value) {
+        document.getElementById("amount").value = value;
+      }
     </script>
-</body>
+  </body>
 </html>
