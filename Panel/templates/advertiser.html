@@ -49,7 +49,11 @@
                 <td>{{.BidValue}}</td>
                 <td>{{.Impressions}}</td>
                 <td>{{.Clicks}}</td>
-                <td>{{.IsActive}}</td>
+                <td>
+                    <button onclick="toggleAdStatus('{{.Id}}')">
+                    {{if .IsActive}}Enabled{{else}}Disabled{{end}}
+                    </button>
+                </td>
             </tr>
             {{end}}
             </tbody>
@@ -64,5 +68,27 @@
         </form>
     </section>
 </div>
+<script>
+    function toggleAdStatus( adId) {
+        const url = `/ads/${adId}/toggle`;
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    console.error('Failed to toggle ad status');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+</script>
 </body>
 </html>

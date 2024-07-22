@@ -79,3 +79,20 @@ func (ctrl AdController) CreateAd(c *gin.Context) {
 	}
 	c.Redirect(http.StatusFound, fmt.Sprintf("/advertisers/%d", id))
 }
+
+func (ctrl AdController) ToggleActivation(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+	ad, err := ctrl.Repo.FindByID(id)
+	if err != nil {
+		c.HTML(http.StatusNotFound, "notfound.html", gin.H{"error": "Ad not found"})
+		return
+	}
+	ad.IsActive = !ad.IsActive
+
+	ctrl.Repo.Update(ad)
+	c.JSON(http.StatusOK, gin.H{})
+}

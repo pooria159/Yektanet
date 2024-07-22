@@ -31,6 +31,8 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 
 	router.POST("/advertisers/:id/charge", advertiserController.ChargeAdvertiser)
 	router.POST("/publisher/:id/withdraw", publisherController.PublisherWithdraw)
+	router.POST("/ads/:id/toggle", adController.ToggleActivation)
+
 	v1 := router.Group("/api/v1")
 	{
 		// Publisher routes
