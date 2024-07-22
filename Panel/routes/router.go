@@ -9,8 +9,9 @@ import (
 
 func SetupRouter(db *gorm.DB) *gin.Engine {
 	router := gin.Default()
-    router.LoadHTMLGlob("templates/*")
-    router.Static("/static", "./static")
+	router.LoadHTMLGlob("templates/*")
+	router.Static("/static", "./static")
+	router.Static("/media", "./media") // Serve uploaded files from the media directory
 
 	// Publisher setup
 	publisherRepo := repositories.PublisherRepository{Db: db}
@@ -25,6 +26,9 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	adController := controllers.AdController{Repo: adRepo}
 
 	router.GET("/publishers/:id", publisherController.PublisherPanel)
+	router.GET("/advertisers/:id", advertiserController.AdvertiserPanel)
+	router.POST("/advertisers/:id/ad", adController.CreateAd)
+
 	router.POST("/publisher/:id/withdraw", publisherController.PublisherWithdraw)
 	v1 := router.Group("/api/v1")
 	{

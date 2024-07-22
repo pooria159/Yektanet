@@ -35,3 +35,13 @@ func (t AdvertiserRepository) FindAll() ([]models.Advertiser, error) {
 	result := t.Db.Find(&advertisers)
 	return advertisers, result.Error
 }
+func (t AdvertiserRepository) FindByIDWithAds(id uint) (models.Advertiser, []models.Ad, error) {
+	var advertiser models.Advertiser
+	var ads []models.Ad
+	result := t.Db.First(&advertiser, id)
+	if result.Error != nil {
+		return advertiser, ads, result.Error
+	}
+	adsResult := t.Db.Where("advertiser_id = ?", id).Find(&ads)
+	return advertiser, ads, adsResult.Error
+}

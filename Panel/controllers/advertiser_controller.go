@@ -12,6 +12,20 @@ type AdvertiserController struct {
 	Repo repositories.AdvertiserRepository
 }
 
+func (ctrl AdvertiserController) AdvertiserPanel(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+	advertiser, ads, err := ctrl.Repo.FindByIDWithAds(uint(id))
+	if err != nil {
+		c.HTML(http.StatusNotFound, "notfound.html", gin.H{"error": "Advertiser not found"})
+		return
+	}
+	c.HTML(http.StatusOK, "advertiser.html", gin.H{"advertiser": advertiser, "ads": ads})
+}
+
 func (ctrl AdvertiserController) CreateAdvertiser(c *gin.Context) {
 	var advertiser models.Advertiser
 	if err := c.ShouldBindJSON(&advertiser); err != nil {
