@@ -13,25 +13,25 @@ import (
 
 /* Constants Configuring the Functionality of Server. */
 
-const FETCH_PERIOD = 5  // How many minutes to wait between fetching
-						// Ads from Panel.
+const FETCH_PERIOD = 5 // How many minutes to wait between fetching
+// Ads from Panel.
 const FETCH_URL = "http://localhost:8080/api/v1/ads/active"
+
+const PRINT_RESPONSE = true // Wheter to print allAds after it is fetched.
 
 /* User-defined Types and Structs*/
 
 type Ad struct {
-	id				string	`json:"Id"`
-	title			string	`json:"Title"`
-	redirectLink	string	`json:"RedirectLink"`
-	imageSource		string	`json:"ImagePath"`
-	bid				int		`json:"BidValue"`
+	id           string `json:"Id"`
+	title        string `json:"Title"`
+	redirectLink string `json:"RedirectLink"`
+	imageSource  string `json:"ImagePath"`
+	bid          int    `json:"BidValue"`
 }
-
 
 /* Global Objects. */
 
-var allAds []Ad; // A slice containing all ads.
-
+var allAds []Ad // A slice containing all ads.
 
 /* Functions of the Server. */
 
@@ -45,42 +45,46 @@ func fetchAds() error {
 		if err != nil {
 			return err
 		}
-		
+
 		resp, err := client.Do(req)
-		
+
 		if err != nil {
 			return err
 		}
 
-		defer resp.Body.Close()
-	
 		responseByte, err := io.ReadAll(resp.Body)
-		if (err != nil) {
+		if err != nil {
 			return err
 		}
 
-		responseStr := string(responseByte)
-		fmt.Printf("responseStr: %v\n", responseStr)
-				
+		json.Unmarshal(responseByte, &allAds)
 
-		time.Sleep(1 * time.Second)
+		if PRINT_RESPONSE {
+			fmt.Printf("allAds: %v\n", allAds)
+		}
+
+		/* Sleep for FETCH_PERIOD minutes. */
+		time.Sleep(1 * time.Second) // For demonstration purposes, we just wait
+		// a single second instead of FETCH_PERIOD minutes.
 	}
-
-
-	/* TODO: Loop over Panel's response to update ads. */
-	/* TODO: Wait for `FETCH_PERIOD` minutes. */
 }
 
 func selectAd() Ad {
-	/* TODO: Choose the Ad with highest bid. */
-	var dummyAd Ad
-	return dummyAd
+	var bestAd Ad
+	var maxBid int = 0
+
+	for _, ad := range allAds {
+		if ad.bid > maxBid {
+			maxBid = ad.bid
+			bestAd = ad
+		}
+	}
+	return bestAd
 }
 
 func getNewAd(c *gin.Context) {
 	selectedAd := selectAd()
 	c.IndentedJSON(http.StatusOK, selectedAd)
-	
 }
 
 func main() {
