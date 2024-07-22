@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type AdController struct {
@@ -47,7 +48,16 @@ func (ctrl AdController) CreateAd(c *gin.Context) {
 	}
 
 	// Save the file to the media directory
-	imagePath := filepath.Join("media", filepath.Base(file.Filename))
+
+	// Generate new filename with timestamp and advertiser ID
+	ext := filepath.Ext(file.Filename)
+	name := strings.TrimSuffix(file.Filename, ext)
+	timestamp := time.Now().Format("20060102150405")
+	newFilename := fmt.Sprintf("%s_%s_%d%s", name, timestamp, id, ext)
+
+	// Save the file to the media directory
+	imagePath := filepath.Join("media", newFilename)
+	// Convert the imagePath to use forward slashes instead of backslashes
 	imagePath = strings.ReplaceAll(imagePath, "\\", "/")
 
 	if err := c.SaveUploadedFile(file, imagePath); err != nil {
