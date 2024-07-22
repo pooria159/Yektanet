@@ -29,7 +29,7 @@ func (ctrl PublisherController) PublisherPanel(c *gin.Context) {
     c.HTML(http.StatusOK, "publisher.html", gin.H{"publisher": publisher})
 }
 
-
+// IS Okey
 func (ctrl PublisherController) PublisherWithdraw(c *gin.Context) {
     id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -59,32 +59,6 @@ func (ctrl PublisherController) PublisherWithdraw(c *gin.Context) {
 }
 
 
-// func publisherWithdraw(c *gin.Context) {
-//     id := c.Param("id")
-//     var publisher Publisher
-//     if err := DB.First(&publisher, id).Error; err != nil {
-//         c.JSON(http.StatusNotFound, gin.H{"error": "Publisher not found"})
-//         return
-//     }
-
-//     amountStr := c.PostForm("amount")
-//     amount, err := strconv.ParseFloat(amountStr, 64)
-//     if err != nil {
-//         c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid amount"})
-//         return
-//     }
-
-    // if publisher.Credit >= int(amount) {
-    //     publisher.Credit -= int(amount)
-    //     DB.Save(&publisher)
-    // } else {
-    //     c.JSON(http.StatusBadRequest, gin.H{"error": "Insufficient balance"})
-    //     return
-    // }
-
-//     c.Redirect(http.StatusSeeOther, "/publisher/"+id)
-// }
-
 
 func (ctrl PublisherController) CreatePublisher(c *gin.Context) {
 	var publisher models.Publisher
@@ -99,21 +73,6 @@ func (ctrl PublisherController) CreatePublisher(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, publisher)
 }
-
-// func (ctrl PublisherController) GetPublisherByID(c *gin.Context) {
-// 	id, err := strconv.Atoi(c.Param("id"))
-// 	if err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
-// 		return
-// 	}
-
-// 	publisher, err := ctrl.Repo.FindByID(uint(id))
-// 	if err != nil {
-// 		c.JSON(http.StatusNotFound, gin.H{"error": "Publisher not found"})
-// 		return
-// 	}
-// 	c.JSON(http.StatusOK, publisher)
-// }
 
 // UpdatePublisher handles updating an existing publisher
 func (ctrl PublisherController) UpdatePublisher(c *gin.Context) {
