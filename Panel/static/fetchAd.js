@@ -1,14 +1,9 @@
 (function() {
-    if (!window.BASE_URL) {
-        console.error('BASE_URL is not defined');
-        return;
-    }
-
     const publisherID = new URLSearchParams(window.location.search).get('publisherID');
     const adContainer = document.getElementById('ad-container');
     
     function fetchAd() {
-        fetch(`${window.BASE_URL}/api/ads?publisherID=${publisherID}`)
+        fetch(`http://localhost:8080//api/ads?publisherID=${publisherID}`)
             .then(response => response.json())
             .then(data => {
                 if (data && data.length > 0) {
