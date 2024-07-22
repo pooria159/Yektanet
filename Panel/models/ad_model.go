@@ -6,6 +6,8 @@ type Ad struct {
 	ImagePath    string     `gorm:"type:varchar(255);not null"`
 	BidValue     int        `gorm:"type:int;not null"`
 	IsActive     bool       `gorm:"type:boolean;not null"`
+	Clicks       int        `gorm:"type:int"`
+	Impressions  int        `gorm:"type:int"`
 	AdvertiserID int        `gorm:"type:int;not null"`
 	Advertiser   Advertiser `gorm:"foreignKey:AdvertiserID"`
 }
