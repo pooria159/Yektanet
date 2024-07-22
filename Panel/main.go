@@ -12,7 +12,7 @@ func main() {
 
 	config.Ping()
 
-	config.Migrate(&models.Publisher{}, &models.Advertiser{})
+	config.Migrate(&models.Publisher{}, &models.Advertiser{}, &models.Ad{})
 
 	router := routes.SetupRouter(config.DB)
 

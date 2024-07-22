@@ -18,6 +18,10 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	advertiserRepo := repositories.AdvertiserRepository{Db: db}
 	advertiserController := controllers.AdvertiserController{Repo: advertiserRepo}
 
+	// Ad setup
+	adRepo := repositories.AdRepository{Db: db}
+	adController := controllers.AdController{Repo: adRepo}
+
 	v1 := router.Group("/api/v1")
 	{
 		// Publisher routes
@@ -38,6 +42,12 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 			advertisers.PUT("/:id", advertiserController.UpdateAdvertiser)
 			advertisers.DELETE("/:id", advertiserController.DeleteAdvertiser)
 			advertisers.GET("", advertiserController.GetAllAdvertisers)
+		}
+
+		// Ad routes
+		ads := v1.Group("/ads")
+		{
+			ads.GET("/active", adController.GetAllActiveAds)
 		}
 	}
 
