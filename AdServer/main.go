@@ -1,8 +1,12 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,16 +15,16 @@ import (
 
 const FETCH_PERIOD = 5  // How many minutes to wait between fetching
 						// Ads from Panel.
-
+const FETCH_URL = "http://localhost:8080/api/v1/ads/active"
 
 /* User-defined Types and Structs*/
 
 type Ad struct {
-	id				string	`json:"id"`
-	title			string	`json:"title"`
-	redirectLink	string	`json:redirect_link`
-	imageSource		string	`json:image_source`
-	bid				int		`json:price`
+	id				string	`json:"Id"`
+	title			string	`json:"Title"`
+	redirectLink	string	`json:"RedirectLink"`
+	imageSource		string	`json:"ImagePath"`
+	bid				int		`json:"BidValue"`
 }
 
 
@@ -33,12 +37,38 @@ var allAds []Ad; // A slice containing all ads.
 
 /* In an infinite loop, waits for `FETCH_PERIOD` minutes
    and then fetches ads from Panel. */
-func fetchAds() {
-	/* TODO: Call the API to Panel to fetch ads. */
+func fetchAds() error {
+	for {
+
+		client := http.DefaultClient
+		req, err := http.NewRequest("GET", FETCH_URL, nil)
+		if err != nil {
+			return err
+		}
+		
+		resp, err := client.Do(req)
+		
+		if err != nil {
+			return err
+		}
+
+		defer resp.Body.Close()
+	
+		responseByte, err := io.ReadAll(resp.Body)
+		if (err != nil) {
+			return err
+		}
+
+		responseStr := string(responseByte)
+		fmt.Printf("responseStr: %v\n", responseStr)
+				
+
+		time.Sleep(1 * time.Second)
+	}
+
+
 	/* TODO: Loop over Panel's response to update ads. */
 	/* TODO: Wait for `FETCH_PERIOD` minutes. */
-	var dummyAd Ad
-	allAds = append(allAds, dummyAd)
 }
 
 func selectAd() Ad {
@@ -50,6 +80,7 @@ func selectAd() Ad {
 func getNewAd(c *gin.Context) {
 	selectedAd := selectAd()
 	c.IndentedJSON(http.StatusOK, selectedAd)
+	
 }
 
 func main() {
@@ -63,5 +94,5 @@ func main() {
 	router := gin.Default()
 	router.GET("/new-ad", getNewAd)
 
-	router.Run("localhost:8080")
+	router.Run("localhost:9090")
 }
