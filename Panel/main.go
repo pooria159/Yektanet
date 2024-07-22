@@ -9,11 +9,8 @@ import (
 
 func main() {
 	config.Connect()
-
 	config.Ping()
-
 	config.Migrate(&models.Publisher{}, &models.Advertiser{}, &models.Ad{})
-
 	router := routes.SetupRouter(config.DB)
 
 	if err := router.Run(":8080"); err != nil {

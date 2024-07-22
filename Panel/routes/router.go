@@ -9,6 +9,8 @@ import (
 
 func SetupRouter(db *gorm.DB) *gin.Engine {
 	router := gin.Default()
+    router.LoadHTMLGlob("templates/*")
+    router.Static("/static", "./static")
 
 	// Publisher setup
 	publisherRepo := repositories.PublisherRepository{Db: db}
@@ -22,13 +24,15 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	adRepo := repositories.AdRepository{Db: db}
 	adController := controllers.AdController{Repo: adRepo}
 
+	router.GET("/publishers/:id", publisherController.PublisherPanel)
+	router.POST("/publisher/:id/withdraw", publisherController.PublisherWithdraw)
 	v1 := router.Group("/api/v1")
 	{
 		// Publisher routes
 		publishers := v1.Group("/publishers")
 		{
 			publishers.POST("", publisherController.CreatePublisher)
-			publishers.GET("/:id", publisherController.GetPublisherByID)
+			publishers.GET("/:id", publisherController.PublisherPanel)
 			publishers.PUT("/:id", publisherController.UpdatePublisher)
 			publishers.DELETE("/:id", publisherController.DeletePublisher)
 			publishers.GET("", publisherController.GetAllPublishers)

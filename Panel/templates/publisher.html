@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publisher Panel</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Publisher Panel</h1>
+        </header>
+        <section>
+            <h2>Publisher Information</h2>
+            <p><strong>Name:</strong> {{.publisher.Name}}</p>
+            <p><strong>Website:</strong> <a href="{{.publisher.Website}}">{{.publisher.Website}}</a></p>
+            <p><strong>Credit:</strong> ${{.publisher.Credit}}</p>
+        </section>
+        <section>
+            <h2>Withdraw</h2>
+            <form action="/publisher/{{.publisher.ID}}/withdraw" method="post">
+                <label for="amount">Amount:</label>
+                <input type="text" id="amount" name="amount" required>
+                <button type="submit">Withdraw</button>
+            </form>
+        </section>
+    </div>
+</body>
+</html>
