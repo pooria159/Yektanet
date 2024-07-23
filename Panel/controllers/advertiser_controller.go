@@ -13,6 +13,7 @@ type AdvertiserController struct {
 	Repo repositories.AdvertiserRepository
 }
 
+// IS Okey
 func (ctrl AdvertiserController) AdvertiserPanel(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -27,6 +28,7 @@ func (ctrl AdvertiserController) AdvertiserPanel(c *gin.Context) {
 	c.HTML(http.StatusOK, "advertiser.html", gin.H{"advertiser": advertiser, "ads": ads})
 }
 
+// IS Okey
 func (ctrl AdvertiserController) CreateAdvertiser(c *gin.Context) {
 	var advertiser models.Advertiser
 	if err := c.ShouldBindJSON(&advertiser); err != nil {
@@ -34,13 +36,14 @@ func (ctrl AdvertiserController) CreateAdvertiser(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.Repo.Save(advertiser); err != nil {
+	if err := ctrl.Repo.Save(&advertiser); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusCreated, advertiser)
 }
 
+// IS Okey
 func (ctrl AdvertiserController) GetAdvertiserByID(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -56,13 +59,24 @@ func (ctrl AdvertiserController) GetAdvertiserByID(c *gin.Context) {
 	c.JSON(http.StatusOK, advertiser)
 }
 
+// IS Okey
 func (ctrl AdvertiserController) UpdateAdvertiser(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
 	var advertiser models.Advertiser
-	if err := c.ShouldBindJSON(&advertiser); err != nil {
+	if err := c.ShouldBindJSON(&advertiser); 
+	err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
+	advertiser.ID = uint(id)
+	if _, err := ctrl.Repo.FindByID(uint(id)); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Advertiser not found"})
+		return
+	}
 	if err := ctrl.Repo.Update(&advertiser); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -70,6 +84,7 @@ func (ctrl AdvertiserController) UpdateAdvertiser(c *gin.Context) {
 	c.JSON(http.StatusOK, advertiser)
 }
 
+// IS Okey
 func (ctrl AdvertiserController) DeleteAdvertiser(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -84,6 +99,7 @@ func (ctrl AdvertiserController) DeleteAdvertiser(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
+// IS Okey
 func (ctrl AdvertiserController) GetAllAdvertisers(c *gin.Context) {
 	advertisers, err := ctrl.Repo.FindAll()
 	if err != nil {
@@ -92,6 +108,8 @@ func (ctrl AdvertiserController) GetAllAdvertisers(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, advertisers)
 }
+
+// IS Okey
 func (ctrl AdvertiserController) ChargeAdvertiser(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
