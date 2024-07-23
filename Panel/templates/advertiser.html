@@ -7,62 +7,88 @@
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Advertiser Panel</h1>
-        </header>
-        <section>
-            <h2>Advertiser Information</h2>
-            <p><strong>Name:</strong> {{.advertiser.Name}}</p>
-            <p><strong>Balance:</strong> ${{.advertiser.Balance}}</p>
-        </section>
-        <section>
-            <h2>Create Ad</h2>
-            <form action="/advertiser/{{.advertiser.ID}}/ad" method="post">
-                <label for="title">Title:</label>
-                <input type="text" id="title" name="title" required>
-                <label for="image">Image URL:</label>
-                <input type="text" id="image" name="image" required>
-                <label for="bid">Bid:</label>
-                <input type="text" id="bid" name="bid" required>
-                <button type="submit">Create Ad</button>
-            </form>
-        </section>
-        <section>
-            <h2>Ads</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Image</th>
-                        <th>Bid</th>
-                        <th>Impressions</th>
-                        <th>Clicks</th>
-                        <th>Enabled</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{range .ads}}
-                    <tr>
-                        <td>{{.Title}}</td>
-                        <td><img src="{{.Image}}" alt="{{.Title}}" width="100"></td>
-                        <td>{{.Bid}}</td>
-                        <td>{{.Impressions}}</td>
-                        <td>{{.Clicks}}</td>
-                        <td>{{.Enabled}}</td>
-                    </tr>
-                    {{end}}
-                </tbody>
-            </table>
-        </section>
-        <section>
-            <h2>Charge Account</h2>
-            <form action="/advertiser/{{.advertiser.ID}}/charge" method="post">
-                <label for="amount">Amount:</label>
-                <input type="text" id="amount" name="amount" required>
-                <button type="submit">Charge</button>
-            </form>
-        </section>
-    </div>
+<div class="container">
+    <header>
+        <h1>Advertiser Panel</h1>
+    </header>
+    <section>
+        <h2>Advertiser Information</h2>
+        <p><strong>Name:</strong> {{.advertiser.Name}}</p>
+        <p><strong>Balance:</strong> ${{.advertiser.Credit}}</p>
+    </section>
+    <section>
+        <h2>Create Ad</h2>
+        <form action="/advertisers/{{.advertiser.Id}}/ad" method="post" enctype="multipart/form-data">
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" required>
+            <label for="image">Image File:</label>
+            <input type="file" id="image" name="image" required>
+            <label for="bid">Bid:</label>
+            <input type="text" id="bid" name="bid" required>
+            <button type="submit">Create Ad</button>
+        </form>
+    </section>
+    <section>
+        <h2>Ads</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Title</th>
+                <th>Image</th>
+                <th>Bid</th>
+                <th>Impressions</th>
+                <th>Clicks</th>
+                <th>Enabled</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{range .ads}}
+            <tr>
+                <td>{{.Title}}</td>
+                <td><img src="../{{.ImagePath}}" alt="{{.Title}}" width="100"></td>
+                <td>{{.BidValue}}</td>
+                <td>{{.Impressions}}</td>
+                <td>{{.Clicks}}</td>
+                <td>
+                    <button onclick="toggleAdStatus('{{.Id}}')">
+                    {{if .IsActive}}Enabled{{else}}Disabled{{end}}
+                    </button>
+                </td>
+            </tr>
+            {{end}}
+            </tbody>
+        </table>
+    </section>
+    <section>
+        <h2>Charge Account</h2>
+        <form action="/advertisers/{{.advertiser.Id}}/charge" method="post">
+            <label for="amount">Amount:</label>
+            <input type="text" id="amount" name="amount" required>
+            <button type="submit">Charge</button>
+        </form>
+    </section>
+</div>
+<script>
+    function toggleAdStatus( adId) {
+        const url = `/ads/${adId}/toggle`;
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    console.error('Failed to toggle ad status');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+</script>
 </body>
 </html>
