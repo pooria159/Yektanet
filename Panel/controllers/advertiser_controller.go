@@ -63,7 +63,7 @@ func (ctrl AdvertiserController) UpdateAdvertiser(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.Repo.Update(advertiser); err != nil {
+	if err := ctrl.Repo.Update(&advertiser); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -110,6 +110,6 @@ func (ctrl AdvertiserController) ChargeAdvertiser(c *gin.Context) {
 		return
 	}
 	advertiser.Credit += int(amount)
-	ctrl.Repo.Update(advertiser)
+	ctrl.Repo.Update(&advertiser)
 	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/advertisers/%d", id))
 }
