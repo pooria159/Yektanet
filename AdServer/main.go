@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -23,39 +22,52 @@ const PRINT_RESPONSE = true // Whether to print allAds after it is fetched.
 /* User-defined Types and Structs*/
 
 type Ad struct {
-	id           string `json:"Id"`
-	title        string `json:"Title"`
-	redirectLink string `json:"RedirectLink"`
-	imageSource  string `json:"ImagePath"`
-	bid          int    `json:"BidValue"`
+	Id           int    `json:"Id"`
+	Title        string `json:"Title"`
+	ImageSource  string `json:"ImagePath"`
+	Bid          int    `json:"BidValue"`
+	IsActive     bool   `json:"IsActive"`
+	RedirectLink string `json:"RedirectLink"`
 }
 
 /* Global Objects. */
 
-var allAds []Ad 			// A slice containing all ads.
-var allAdsMutex sync.Mutex	// Mutex object to syncronize working with allAds.
+var allAds []Ad            // A slice containing all ads.
+var allAdsMutex sync.Mutex // Mutex object to syncronize working with allAds.
 
 /* Functions of the Server. */
 
-/* In an infinite loop, waits for `FETCH_PERIOD` minutes
-   and then fetches ads from Panel. */
+/*
+In an infinite loop, waits for `FETCH_PERIOD` minutes
+
+	and then fetches ads from Panel.
+*/
 func fetchAds() error {
 	for {
+
+		/* Sleep for FETCH_PERIOD minutes. */
+		time.Sleep(1 * time.Second) // For demonstration purposes, we just wait
+		// a single second instead of FETCH_PERIOD minutes.
+		// TODO: Revert the waiting interval to the original FETCH_PERIOD.
+
 		client := http.DefaultClient
 		req, err := http.NewRequest("GET", FETCH_URL, nil)
 		if err != nil {
-			return err
+			log.Print("error in making request:", err)
+			continue
 		}
 
 		resp, err := client.Do(req)
 
 		if err != nil {
-			return err
+			log.Print("error in doing request:", err)
+			continue
 		}
 
 		responseByte, err := io.ReadAll(resp.Body)
 		if err != nil {
-			return err
+			log.Print("error in reading response body:", err)
+			continue
 		}
 
 		allAdsMutex.Lock()
@@ -63,13 +75,8 @@ func fetchAds() error {
 		allAdsMutex.Unlock()
 
 		if PRINT_RESPONSE {
-			fmt.Printf("allAds: %v\n", allAds)
+			log.Printf("Successful Ad Fetch.\nallAds: %+v\n", allAds)
 		}
-
-		/* Sleep for FETCH_PERIOD minutes. */
-		time.Sleep(1 * time.Second) // For demonstration purposes, we just wait
-									// a single second instead of FETCH_PERIOD minutes.
-									// TODO: Revert the waiting interval to the original FETCH_PERIOD.
 	}
 }
 
@@ -79,8 +86,8 @@ func selectAd() Ad {
 
 	allAdsMutex.Lock()
 	for _, ad := range allAds {
-		if ad.bid > maxBid {
-			maxBid = ad.bid
+		if ad.Bid > maxBid {
+			maxBid = ad.Bid
 			bestAd = ad
 		}
 	}
