@@ -5,11 +5,13 @@ import (
 	"gorm.io/gorm"
 )
 
+// All functions is Okey
+
 type AdvertiserRepository struct {
 	Db *gorm.DB
 }
 
-func (t AdvertiserRepository) Save(a models.Advertiser) error {
+func (t AdvertiserRepository) Save(a *models.Advertiser) error {
 	result := t.Db.Create(&a)
 	return result.Error
 }
@@ -20,7 +22,7 @@ func (t AdvertiserRepository) FindByID(id uint) (models.Advertiser, error) {
 	return advertiser, result.Error
 }
 
-func (t AdvertiserRepository) Update(a models.Advertiser) error {
+func (t AdvertiserRepository) Update(a *models.Advertiser) error {
 	result := t.Db.Save(&a)
 	return result.Error
 }
