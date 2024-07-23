@@ -23,7 +23,7 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 
 	// Ad setup
 	adRepo := repositories.AdRepository{Db: db}
-	adController := controllers.AdController{Repo: adRepo}
+	adController := controllers.AdController{Repo: adRepo, RepoAdvertiser: advertiserRepo, RepoPublisher: publisherRepo}
 
 	router.GET("/publishers/:id", publisherController.PublisherPanel)
 	router.GET("/advertisers/:id", advertiserController.AdvertiserPanel)
@@ -32,7 +32,6 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	router.POST("/advertisers/:id/charge", advertiserController.ChargeAdvertiser)
 	router.POST("/publisher/:id/withdraw", publisherController.PublisherWithdraw)
 	router.POST("/ads/:id/toggle", adController.ToggleActivation)
-
 	v1 := router.Group("/api/v1")
 	{
 		// Publisher routes
@@ -58,6 +57,7 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 		ads := v1.Group("/ads")
 		{
 			ads.GET("/active", adController.GetAllActiveAds)
+			ads.POST("/:id/event", adController.HandleEvent)
 		}
 	}
 

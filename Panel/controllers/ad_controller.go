@@ -14,6 +14,9 @@ import (
 
 type AdController struct {
 	Repo repositories.AdRepository
+	//temp
+	RepoAdvertiser repositories.AdvertiserRepository
+	RepoPublisher  repositories.PublisherRepository
 }
 
 func (ctrl AdController) GetAllActiveAds(c *gin.Context) {
@@ -93,6 +96,69 @@ func (ctrl AdController) ToggleActivation(c *gin.Context) {
 	}
 	ad.IsActive = !ad.IsActive
 
-	ctrl.Repo.Update(ad)
+	ctrl.Repo.Update(&ad)
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+//temp : only for phase 1
+
+type EventRequest struct {
+	EventType    string `json:"event_type" binding:"required"`
+	PublisherID  int    `json:"publisher_id" binding:"required"`
+	AdvertiserID int    `json:"advertiser_id" binding:"required"`
+}
+
+func (ctrl AdController) HandleEvent(c *gin.Context) {
+	// Convert the id parameter from string to int
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+
+	ad, err := ctrl.Repo.FindByID(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Ad not found"})
+		return
+	}
+
+	// Define a struct to bind JSON fields
+	var eventRequest EventRequest
+
+	// Bind the JSON fields to the struct and check for errors
+	if err := c.ShouldBindJSON(&eventRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "here"})
+		return
+	}
+	advertiser, err := ctrl.RepoAdvertiser.FindByID(uint(eventRequest.AdvertiserID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Advertiser not found"})
+		return
+	}
+	publisher, err := ctrl.RepoPublisher.FindByID(uint(eventRequest.PublisherID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Publisher not found"})
+		return
+	}
+
+	switch eventRequest.EventType {
+	case "click":
+		ad.Clicks += 1
+		advertiser.Credit -= ad.BidValue
+		publisher.Credit += ad.BidValue
+	case "impression":
+		ad.Impressions += 1
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event type"})
+		return
+	}
+	err = ctrl.Repo.Update(&ad)
+	err = ctrl.RepoAdvertiser.Update(&advertiser)
+	err = ctrl.RepoPublisher.Update(&publisher)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to handle error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Event successfully processed"})
 }
