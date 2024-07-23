@@ -21,7 +21,7 @@ const FETCH_PERIOD = 60	// How many seconds to wait between fetching
 						// Ads from Panel.
 const FETCH_URL = "http://localhost:8080/api/v1/ads/active/"	// Address from which ads are to be fetched.
 const EVENT_URL = "http://localhost:7070/"						// Address to which ads are to be sent.
-const API_TEMPLATE = "/api/ads"									// URL that will be routed to the getNewAd handler.
+const API_TEMPLATE = "/api/ads/"									// URL that will be routed to the getNewAd handler.
 const PUBLISHER_ID_PARAM = "publisherID"						// Name of the parameter in URL that specifies publisher's id.
 
 const PRINT_RESPONSE = true // Whether to print allAds after it is fetched.
@@ -164,8 +164,9 @@ func generateResponse (selectedAd FetchedAd, requestingPublisherId int) Response
    for a new ad. */
 func getNewAd(c *gin.Context) {
 	selectedAd := selectAd()
-	publisherId, _ := strconv.Atoi(c.Param(PUBLISHER_ID_PARAM))
+	publisherId, _ := strconv.Atoi(c.Query(PUBLISHER_ID_PARAM))
 	response := generateResponse(selectedAd, publisherId)
+	
 	c.IndentedJSON(http.StatusOK, response)
 }
 
@@ -178,7 +179,7 @@ func main() {
 	   and query-responser. */
 	go fetchAds()
 	router := gin.Default()
-	router.GET("/new-ad", getNewAd)
+	router.GET(API_TEMPLATE, getNewAd)
 
 	router.Run("localhost:9090")
 }
