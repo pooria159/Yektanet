@@ -1,7 +1,9 @@
 package models
 
+import "gorm.io/gorm"
+
 type Ad struct {
-	Id           int        `gorm:"type:int;primary_key"`
+	gorm.Model
 	Title        string     `gorm:"type:varchar(255);not null"`
 	ImagePath    string     `gorm:"type:varchar(255);not null"`
 	BidValue     int        `gorm:"type:int;not null"`
