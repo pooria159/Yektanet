@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -51,9 +52,6 @@ func (s *EventServer) handleImpression(c *gin.Context) {
 	adID := c.Query("ad_id")
 
 	if userID == "" || publisherID == "" || adID == "" {
-
-		fmt.Printf("Received impression request with user_id=%s, publisher_id=%s, ad_id=%s\n", userID, publisherID, adID)
-
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing required query parameters"})
 		return
 	}
@@ -73,7 +71,10 @@ func (s *EventServer) handleImpression(c *gin.Context) {
 		s.impressions[event.UserID] = value
 		s.impressionchan <- event
 
-		s.callAPI(event)
+		//		s.callAPI(event)
+		if err := s.callAPI(event); err != nil {
+			log.Printf("Failed to call API for impression event: %v\n", err)
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "Impression processed"})
@@ -86,9 +87,6 @@ func (s *EventServer) handleClick(c *gin.Context) {
 	publisherID := c.Query("publisher_id")
 	adID := c.Query("ad_id")
 	adURL := c.Query("ad_url")
-
-	// Print debug information
-	// fmt.Printf("Received click request with user_id=%s, publisher_id=%s, ad_id=%s, ad_url=%s\n", userID, publisherID, adID, adURL)
 
 	// Check for missing parameters
 	if userID == "" || publisherID == "" || adID == "" || adURL == "" {
@@ -112,8 +110,9 @@ func (s *EventServer) handleClick(c *gin.Context) {
 		s.clicks[event.UserID] = value
 		s.clickchan <- event
 
-		// Call internal API for additional processing
-		go s.callAPI(event)
+		if err := s.callAPI(event); err != nil {
+			log.Printf("Failed to call API for impression event: %v\n", err)
+		}
 	}
 
 	// Redirect to the ad URL
@@ -121,7 +120,7 @@ func (s *EventServer) handleClick(c *gin.Context) {
 }
 
 // callInternalAPI simulates calling an internal API to handle the click
-func (s *EventServer) callAPI(event Event) {
+func (s *EventServer) callAPI(event Event) error {
 	url := "http://example/update"
 	payload := map[string]interface{}{
 		"publisher_id": event.PublisherID,
@@ -132,18 +131,20 @@ func (s *EventServer) callAPI(event Event) {
 
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
 	if err != nil {
-		// Handle error
-		return
+		return fmt.Errorf("failed to marshal payload: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		// Handle error
-		return
+		return fmt.Errorf("request failed: %v", err)
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("received non-200 response: %d", resp.StatusCode)
+	}
+	return nil
 }
 
 func (s *EventServer) processEvents() {
