@@ -16,7 +16,8 @@ type Event struct {
 	UserID      string
 	PublisherID string
 	AdID        string
-	AdURL       string // New field for ad URL
+	AdURL       string
+	EventType   string
 }
 
 // Value represents the value stored in impression and clicks
@@ -61,6 +62,7 @@ func (s *EventServer) handleImpression(c *gin.Context) {
 		UserID:      userID,
 		PublisherID: publisherID,
 		AdID:        adID,
+		EventType:   "impression",
 	}
 
 	if _, ok := s.impressions[event.UserID]; !ok {
@@ -70,6 +72,8 @@ func (s *EventServer) handleImpression(c *gin.Context) {
 		}
 		s.impressions[event.UserID] = value
 		s.impressionchan <- event
+
+		s.callAPI(event)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "Impression processed"})
@@ -81,7 +85,7 @@ func (s *EventServer) handleClick(c *gin.Context) {
 	userID := c.Query("user_id")
 	publisherID := c.Query("publisher_id")
 	adID := c.Query("ad_id")
-	adURL := c.Query("ad_url") // New query parameter for ad URL
+	adURL := c.Query("ad_url")
 
 	// Print debug information
 	// fmt.Printf("Received click request with user_id=%s, publisher_id=%s, ad_id=%s, ad_url=%s\n", userID, publisherID, adID, adURL)
@@ -96,7 +100,8 @@ func (s *EventServer) handleClick(c *gin.Context) {
 		UserID:      userID,
 		PublisherID: publisherID,
 		AdID:        adID,
-		AdURL:       adURL, // Set the ad URL
+		AdURL:       adURL,
+		EventType:   "click",
 	}
 
 	if _, ok := s.clicks[event.UserID]; !ok {
@@ -121,6 +126,7 @@ func (s *EventServer) callAPI(event Event) {
 	payload := map[string]interface{}{
 		"publisher_id": event.PublisherID,
 		"ad_id":        event.AdID,
+		"event_type":   event.EventType,
 	}
 	body, _ := json.Marshal(payload)
 
