@@ -9,8 +9,9 @@ import (
 
 func SetupRouter(db *gorm.DB) *gin.Engine {
 	router := gin.Default()
-    router.LoadHTMLGlob("templates/*")
-    router.Static("/static", "./static")
+	router.LoadHTMLGlob("templates/*")
+	router.Static("/static", "./static")
+	router.Static("/media", "./media") // Serve uploaded files from the media directory
 
 	// Publisher setup
 	publisherRepo := repositories.PublisherRepository{Db: db}
@@ -22,17 +23,21 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 
 	// Ad setup
 	adRepo := repositories.AdRepository{Db: db}
-	adController := controllers.AdController{Repo: adRepo}
+	adController := controllers.AdController{Repo: adRepo, RepoAdvertiser: advertiserRepo, RepoPublisher: publisherRepo}
 
 	router.GET("/publishers/:id", publisherController.PublisherPanel)
+	router.GET("/advertisers/:id", advertiserController.AdvertiserPanel)
+	router.POST("/advertisers/:id/ad", adController.CreateAd)
+
+	router.POST("/advertisers/:id/charge", advertiserController.ChargeAdvertiser)
 	router.POST("/publisher/:id/withdraw", publisherController.PublisherWithdraw)
+	router.POST("/ads/:id/toggle", adController.ToggleActivation)
 	v1 := router.Group("/api/v1")
 	{
 		// Publisher routes
 		publishers := v1.Group("/publishers")
 		{
 			publishers.POST("", publisherController.CreatePublisher)
-			publishers.GET("/:id", publisherController.PublisherPanel)
 			publishers.PUT("/:id", publisherController.UpdatePublisher)
 			publishers.DELETE("/:id", publisherController.DeletePublisher)
 			publishers.GET("", publisherController.GetAllPublishers)
@@ -52,6 +57,7 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 		ads := v1.Group("/ads")
 		{
 			ads.GET("/active", adController.GetAllActiveAds)
+			ads.POST("/:id/event", adController.HandleEvent)
 		}
 	}
 

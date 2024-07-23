@@ -20,7 +20,7 @@ func (t AdRepository) FindByID(id int) (models.Ad, error) {
 	return ad, result.Error
 }
 
-func (t AdRepository) Update(ad models.Ad) error {
+func (t AdRepository) Update(ad *models.Ad) error {
 	result := t.Db.Save(&ad)
 	return result.Error
 }
