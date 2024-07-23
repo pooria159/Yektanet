@@ -2,15 +2,16 @@ package config
 
 import (
 	"fmt"
+	"log"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log"
 )
 
 var DB *gorm.DB
 
 func Connect() {
-	dsn := "user=postgres dbname=postgres password=Pooria1381 sslmode=disable"
+	dsn := "user=postgres dbname=postgres password=post_pass sslmode=disable host=localhost"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("failed to connect to database: ", err)
