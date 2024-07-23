@@ -42,6 +42,6 @@ func (t AdvertiserRepository) FindByIDWithAds(id uint) (models.Advertiser, []mod
 	if result.Error != nil {
 		return advertiser, ads, result.Error
 	}
-	adsResult := t.Db.Where("advertiser_id = ?", id).Find(&ads)
+	adsResult := t.Db.Where("advertiser_id = ?", id).Order("title ASC").Find(&ads)
 	return advertiser, ads, adsResult.Error
 }
