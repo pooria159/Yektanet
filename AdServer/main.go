@@ -17,10 +17,12 @@ import (
 
 var TEST_RAW_RESPONSE = []byte(`[{"Id":1,"Title":"12","ImagePath":"uploads\\treesample.png","BidValue":12,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}},{"Id":6,"Title":"144","ImagePath":"media\\treesample.png","BidValue":144,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}},{"Id":11,"Title":"test","ImagePath":"media/swoled_20240722144230_2.jpg","BidValue":12,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}},{"Id":10,"Title":"first","ImagePath":"media/s.jpg","BidValue":100,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}}]`)
 
-const FETCH_PERIOD = 1	// How many minutes to wait between fetching
+const FETCH_PERIOD = 60	// How many seconds to wait between fetching
 						// Ads from Panel.
 const FETCH_URL = "http://localhost:8080/api/v1/ads/active/"	// Address from which ads are to be fetched.
 const EVENT_URL = "http://localhost:7070/"						// Address to which ads are to be sent.
+const API_TEMPLATE = "/api/ads"									// URL that will be routed to the getNewAd handler.
+const PUBLISHER_ID_PARAM = "publisherID"						// Name of the parameter in URL that specifies publisher's id.
 
 const PRINT_RESPONSE = true // Whether to print allAds after it is fetched.
 const USER_TOKEN_SIZE = 30	// User token is a random token attached to the sent click and impression link.
@@ -52,39 +54,40 @@ var allFetchedAds []FetchedAd		// A slice containing all ads.
    and then fetches ads from Panel. */
 func fetchAds() error {
 	for {
-
-		/* Sleep for FETCH_PERIOD minutes. */
-		time.Sleep(1 * time.Second) // For demonstration purposes, we just wait
-		// a single second instead of FETCH_PERIOD minutes.
-		// TODO: Revert the waiting interval to the original FETCH_PERIOD.
-
+		
 		client := http.DefaultClient
 		req, err := http.NewRequest("GET", FETCH_URL, nil)
 		if err != nil {
 			log.Print("error in making request:", err)
+			time.Sleep((FETCH_PERIOD / 2) *  time.Second)
 			continue
 		}
 
 		resp, err := client.Do(req)
-
+		
 		if err != nil {
 			log.Print("error in doing request:", err)
+			time.Sleep((FETCH_PERIOD / 2) *  time.Second)
 			continue
 		}
-
+		
 		_, err = io.ReadAll(resp.Body)
 		if err != nil {
 			log.Print("error in reading response body:", err)
+			time.Sleep((FETCH_PERIOD / 2) *  time.Second)
 			continue
 		}
 
 		// Replacing the returned response with a test respone.
 		// TODO: Remove the replacement of response done here.
 		json.Unmarshal(TEST_RAW_RESPONSE, &allFetchedAds)
-
+		
 		if PRINT_RESPONSE {
 			log.Printf("Successful Ad Fetch.\nallAds: %+v\n", allFetchedAds)
 		}
+
+		/* Sleep for FETCH_PERIOD seconds. */
+		time.Sleep(FETCH_PERIOD * time.Minute)
 	}
 }
 
@@ -161,7 +164,7 @@ func generateResponse (selectedAd FetchedAd, requestingPublisherId int) Response
    for a new ad. */
 func getNewAd(c *gin.Context) {
 	selectedAd := selectAd()
-	publisherId := 0	// TODO: extract publisher id from request parameters.
+	publisherId, _ := strconv.Atoi(c.Param(PUBLISHER_ID_PARAM))
 	response := generateResponse(selectedAd, publisherId)
 	c.IndentedJSON(http.StatusOK, response)
 }
