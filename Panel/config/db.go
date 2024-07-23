@@ -2,15 +2,22 @@ package config
 
 import (
 	"fmt"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
+	"os"
 )
 
 var DB *gorm.DB
 
 func Connect() {
-	dsn := "user=postgres dbname=postgres password=postgres sslmode=disable"
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	dsn := os.Getenv("DSN")
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("failed to connect to database: ", err)
