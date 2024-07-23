@@ -32,7 +32,6 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 		publishers := v1.Group("/publishers")
 		{
 			publishers.POST("", publisherController.CreatePublisher)
-			publishers.GET("/:id", publisherController.PublisherPanel)
 			publishers.PUT("/:id", publisherController.UpdatePublisher)
 			publishers.DELETE("/:id", publisherController.DeletePublisher)
 			publishers.GET("", publisherController.GetAllPublishers)
