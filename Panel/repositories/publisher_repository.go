@@ -5,11 +5,13 @@ import (
 	"gorm.io/gorm"
 )
 
+// All Functions is okey
+
 type PublisherRepository struct {
 	Db *gorm.DB
 }
 
-func (t PublisherRepository) Save(p models.Publisher) error {
+func (t PublisherRepository) Save(p *models.Publisher) error {
 	result := t.Db.Create(&p)
 	return result.Error
 }
@@ -20,7 +22,7 @@ func (t PublisherRepository) FindByID(id uint) (models.Publisher, error) {
 	return publisher, result.Error
 }
 
-func (t PublisherRepository) Update(p models.Publisher) error {
+func (t PublisherRepository) Update(p *models.Publisher) error {
 	result := t.Db.Save(&p)
 	return result.Error
 }

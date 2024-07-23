@@ -13,7 +13,10 @@
 _build/
 bin/
 pkg/
-
+Panel/.env
+Panel/media/*
+*/.env
+*/media/*
 # Go workspace file
 go.work
 go.work.sum

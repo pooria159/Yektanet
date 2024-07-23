@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
+
 <div class="container">
     <header>
         <h1>Advertiser Panel</h1>
@@ -38,7 +39,8 @@
                 <th>Bid</th>
                 <th>Impressions</th>
                 <th>Clicks</th>
-                <th>Enabled</th>
+                <th>CTR</th>
+                <th>Status</th>
             </tr>
             </thead>
             <tbody>
@@ -49,6 +51,15 @@
                 <td>{{.BidValue}}</td>
                 <td>{{.Impressions}}</td>
                 <td>{{.Clicks}}</td>
+                <td><script>
+                    function calculateCTR(clicks, impressions) {
+                        const clicksNum = Number(clicks);
+                        const impressionsNum = Number(impressions);
+                        return impressionsNum === 0 ? "0" : (clicksNum / impressionsNum).toFixed(2).toString();
+                    }
+                    document.write(calculateCTR('{{.Clicks}}', '{{.Impressions}}'));
+                    </script>
+                </td>
                 <td>
                     <button onclick="toggleAdStatus('{{.Id}}')">
                     {{if .IsActive}}Enabled{{else}}Disabled{{end}}
@@ -90,5 +101,6 @@
             });
     }
 </script>
+
 </body>
 </html>
