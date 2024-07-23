@@ -17,15 +17,15 @@ import (
 
 var TEST_RAW_RESPONSE = []byte(`[{"Id":1,"Title":"12","ImagePath":"uploads\\treesample.png","BidValue":12,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}},{"Id":6,"Title":"144","ImagePath":"media\\treesample.png","BidValue":144,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}},{"Id":11,"Title":"test","ImagePath":"media/swoled_20240722144230_2.jpg","BidValue":12,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}},{"Id":10,"Title":"first","ImagePath":"media/s.jpg","BidValue":100,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}}]`)
 
-const FETCH_PERIOD = 1 // How many minutes to wait between fetching
-// Ads from Panel.
-const FETCH_URL = "http://localhost:8080/api/v1/ads/active/"		// Address from which ads are to be fetched.
+const FETCH_PERIOD = 1	// How many minutes to wait between fetching
+						// Ads from Panel.
+const FETCH_URL = "http://localhost:8080/api/v1/ads/active/"	// Address from which ads are to be fetched.
 const EVENT_URL = "http://localhost:7070/"						// Address to which ads are to be sent.
 
 const PRINT_RESPONSE = true // Whether to print allAds after it is fetched.
 const USER_TOKEN_SIZE = 30	// User token is a random token attached to the sent click and impression link.
 
-/* User-defined Types and Structs*/
+/* User-defined Types and Structs */
 
 type FetchedAd struct {
 	Id           int    `json:"Id"`
@@ -42,17 +42,14 @@ type ResponseInfo struct {
 	ImpressionLink	string	`json:"ImpressionLink"`
 }
 
-/* Global Objects. */
+/* Global Objects */
 
 var allFetchedAds []FetchedAd		// A slice containing all ads.
 
-/* Functions of the Server. */
+/* Functions of the Server */
 
-/*
-In an infinite loop, waits for `FETCH_PERIOD` minutes
-
-	and then fetches ads from Panel.
-*/
+/* In an infinite loop, waits for `FETCH_PERIOD` minutes
+   and then fetches ads from Panel. */
 func fetchAds() error {
 	for {
 
@@ -107,7 +104,7 @@ func selectAd() FetchedAd {
 
 /* Returns a uniformly random int
    in the interval [a, b). */
-   func randomInRange(a, b int) int {
+func randomInRange(a, b int) int {
 	return a + rand.Intn(b - a)
 }
 
