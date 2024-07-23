@@ -50,44 +50,56 @@ var allFetchedAds []FetchedAd		// A slice containing all ads.
 
 /* Functions of the Server */
 
-/* In an infinite loop, waits for `FETCH_PERIOD` minutes
-   and then fetches ads from Panel. */
-func fetchAds() error {
+/* Issues a request to Panel and obtains all available
+   ads as the response. Returns the first encountered
+   error, if any. */
+func fetchAdsOnce() error {
+	client := http.DefaultClient
+	req, err := http.NewRequest("GET", FETCH_URL, nil)
+	if err != nil {
+		log.Println("error in making request")
+		return err
+	}
+	
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("error in doing request")
+		return err
+	}
+	
+	responseByte, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("error in reading response body:")
+		return err
+	}
+	
+	
+	// You can comment the next line and uncomment its following line
+	// in order to mock the response of Panel.
+	json.Unmarshal(responseByte, &allFetchedAds)
+	// json.Unmarshal(TEST_RAW_RESPONSE, &allFetchedAds)
+	
+	if PRINT_RESPONSE {
+		log.Printf("Successful Ad Fetch.\nallAds: %+v\n", allFetchedAds)
+	}
+	
+	return nil
+}
+
+/* In an infinite loop, calls fetchAdsOnce and
+   checks if any error has occured. If so, logs the error
+   and waits for half of normal waiting interval. If not,
+   waits for `FETCH_PERIOD` seconds. */
+func periodicallyFetchAds() {
+	var err error
 	for {
-		
-		client := http.DefaultClient
-		req, err := http.NewRequest("GET", FETCH_URL, nil)
-		if err != nil {
-			log.Print("error in making request:", err)
-			time.Sleep((FETCH_PERIOD / 2) *  time.Second)
-			continue
+		err = fetchAdsOnce()
+		if err == nil {
+			time.Sleep(FETCH_PERIOD * time.Second)
+		} else {
+			log.Println("error while fetching ad:", err)
+			time.Sleep(FETCH_PERIOD / 2 * time.Second)
 		}
-
-		resp, err := client.Do(req)
-		
-		if err != nil {
-			log.Print("error in doing request:", err)
-			time.Sleep((FETCH_PERIOD / 2) *  time.Second)
-			continue
-		}
-		
-		_, err = io.ReadAll(resp.Body)
-		if err != nil {
-			log.Print("error in reading response body:", err)
-			time.Sleep((FETCH_PERIOD / 2) *  time.Second)
-			continue
-		}
-
-		// Replacing the returned response with a test respone.
-		// TODO: Remove the replacement of response done here.
-		json.Unmarshal(TEST_RAW_RESPONSE, &allFetchedAds)
-		
-		if PRINT_RESPONSE {
-			log.Printf("Successful Ad Fetch.\nallAds: %+v\n", allFetchedAds)
-		}
-
-		/* Sleep for FETCH_PERIOD seconds. */
-		time.Sleep(FETCH_PERIOD * time.Minute)
 	}
 }
 
@@ -151,7 +163,7 @@ func generateEventServerLink(action string, selectedAd FetchedAd, requestingPubl
 
 /* Makes a Response instance, puts info that is to be sent 
    in it and returns it. */
-func generateResponse (selectedAd FetchedAd, requestingPublisherId int) ResponseInfo {
+func generateResponse(selectedAd FetchedAd, requestingPublisherId int) ResponseInfo {
 	var response ResponseInfo
 	response.Title			= selectedAd.Title
 	response.ImagePath		= selectedAd.ImageSource
@@ -177,7 +189,7 @@ func main() {
 
 	/* Run the two main workers: ad-fetcher
 	   and query-responser. */
-	go fetchAds()
+	go periodicallyFetchAds()
 	router := gin.Default()
 	router.GET(API_TEMPLATE, getNewAd)
 
