@@ -48,7 +48,6 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 		advertisers := v1.Group("/advertisers")
 		{
 			advertisers.POST("", advertiserController.CreateAdvertiser)
-			advertisers.GET("/:id", advertiserController.GetAdvertiserByID)
 			advertisers.PUT("/:id", advertiserController.UpdateAdvertiser)
 			advertisers.DELETE("/:id", advertiserController.DeleteAdvertiser)
 			advertisers.GET("", advertiserController.GetAllAdvertisers)
