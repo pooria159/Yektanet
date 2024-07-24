@@ -47,3 +47,6 @@ func (t AdvertiserRepository) FindByIDWithAds(id uint) (models.Advertiser, []mod
 	adsResult := t.Db.Where("advertiser_id = ?", id).Order("title ASC").Find(&ads)
 	return advertiser, ads, adsResult.Error
 }
+
+
+var _ AdvertiserRepositoryInterface = (*AdvertiserRepository)(nil)

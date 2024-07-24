@@ -9,10 +9,13 @@ import (
 	"strconv"
 )
 
-type AdvertiserController struct {
-	Repo repositories.AdvertiserRepository
-}
+// type AdvertiserController struct {
+// 	Repo repositories.AdvertiserRepository
+// }
 
+type AdvertiserController struct {
+    Repo repositories.AdvertiserRepositoryInterface
+}
 // IS Okey
 func (ctrl AdvertiserController) AdvertiserPanel(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
