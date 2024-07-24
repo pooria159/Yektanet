@@ -22,7 +22,7 @@ func (ctrl AdvertiserController) AdvertiserPanel(c *gin.Context) {
 	}
 	advertiser, ads, err := ctrl.Repo.FindByIDWithAds(uint(id))
 	if err != nil {
-		c.HTML(http.StatusNotFound, "notfound.html", gin.H{"error": "Advertiser not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Advertiser not found"})
 		return
 	}
 	c.HTML(http.StatusOK, "advertiser.html", gin.H{"advertiser": advertiser, "ads": ads})
@@ -118,7 +118,7 @@ func (ctrl AdvertiserController) ChargeAdvertiser(c *gin.Context) {
 	}
 	advertiser, err := ctrl.Repo.FindByID(uint(id))
 	if err != nil {
-		c.HTML(http.StatusNotFound, "notfound.html", gin.H{"error": "Advertiser not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Advertiser not found"})
 		return
 	}
 	amountStr := c.PostForm("amount")

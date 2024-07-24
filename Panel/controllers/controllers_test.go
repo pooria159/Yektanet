@@ -66,17 +66,55 @@ func TestPublisherPanel(t *testing.T) {
         assert.Contains(t, w.Body.String(), "Test Publisher")
     })
 
+    t.Run("Valid ID and Publisher Exists", func(t *testing.T) {
+        mockRepo := new(MockPublisherRepository)
+        ctrl := PublisherController{Repo: mockRepo}
+        router := gin.Default()
+        router.LoadHTMLGlob("../templates/*")
+        router.GET("/publisher/:id", ctrl.PublisherPanel)
+        publisher := models.Publisher{Model: gorm.Model{ID: 15}, Name: "Test Publisher"}
+        mockRepo.On("FindByID", uint(15)).Return(publisher, nil)
+        w := httptest.NewRecorder()
+        req, _ := http.NewRequest("GET", "/publisher/15", nil)
+        router.ServeHTTP(w, req)
+        assert.Equal(t, http.StatusOK, w.Code)
+        assert.Contains(t, w.Body.String(), "Test Publisher")
+    })
+
     t.Run("Invalid ID", func(t *testing.T) {
         mockRepo := new(MockPublisherRepository)
         ctrl := PublisherController{Repo: mockRepo}
         router := gin.Default()
         router.LoadHTMLGlob("../templates/*")
         router.GET("/publisher/:id", ctrl.PublisherPanel)
-
         w := httptest.NewRecorder()
         req, _ := http.NewRequest("GET", "/publisher/abc", nil)
         router.ServeHTTP(w, req)
+        assert.Equal(t, http.StatusBadRequest, w.Code)
+        assert.Contains(t, w.Body.String(), "Invalid ID")
+    })
 
+    t.Run("Invalid ID", func(t *testing.T) {
+        mockRepo := new(MockPublisherRepository)
+        ctrl := PublisherController{Repo: mockRepo}
+        router := gin.Default()
+        router.LoadHTMLGlob("../templates/*")
+        router.GET("/publisher/:id", ctrl.PublisherPanel)
+        w := httptest.NewRecorder()
+        req, _ := http.NewRequest("GET", "/publisher/1o", nil)
+        router.ServeHTTP(w, req)
+        assert.Equal(t, http.StatusBadRequest, w.Code)
+        assert.Contains(t, w.Body.String(), "Invalid ID")
+    })
+    t.Run("Invalid ID", func(t *testing.T) {
+        mockRepo := new(MockPublisherRepository)
+        ctrl := PublisherController{Repo: mockRepo}
+        router := gin.Default()
+        router.LoadHTMLGlob("../templates/*")
+        router.GET("/publisher/:id", ctrl.PublisherPanel)
+        w := httptest.NewRecorder()
+        req, _ := http.NewRequest("GET", "/publisher/1o1", nil)
+        router.ServeHTTP(w, req)
         assert.Equal(t, http.StatusBadRequest, w.Code)
         assert.Contains(t, w.Body.String(), "Invalid ID")
     })
@@ -88,11 +126,9 @@ func TestPublisherPanel(t *testing.T) {
         router.LoadHTMLGlob("../templates/*")
         router.GET("/publisher/:id", ctrl.PublisherPanel)
         mockRepo.On("FindByID", uint(2)).Return(models.Publisher{}, fmt.Errorf("Publisher not found"))
-
         w := httptest.NewRecorder()
         req, _ := http.NewRequest("GET", "/publisher/2", nil)
         router.ServeHTTP(w, req)
-
         assert.Equal(t, http.StatusNotFound, w.Code)
         assert.Contains(t, w.Body.String(), "Publisher not found")
     })
@@ -108,11 +144,9 @@ func TestPublisherWithdraw(t *testing.T) {
         ctrl := PublisherController{Repo: mockRepo}
         router := gin.Default()
         router.POST("/publisher/:id/withdraw", ctrl.PublisherWithdraw)
-
         w := httptest.NewRecorder()
         req, _ := http.NewRequest("POST", "/publisher/abc/withdraw", nil)
         router.ServeHTTP(w, req)
-
         assert.Equal(t, http.StatusBadRequest, w.Code)
         assert.Contains(t, w.Body.String(), "Invalid ID")
     })
@@ -122,13 +156,10 @@ func TestPublisherWithdraw(t *testing.T) {
         ctrl := PublisherController{Repo: mockRepo}
         router := gin.Default()
         router.POST("/publisher/:id/withdraw", ctrl.PublisherWithdraw)
-
         mockRepo.On("FindByID", uint(2)).Return(models.Publisher{}, fmt.Errorf("Publisher not found"))
-
         w := httptest.NewRecorder()
         req, _ := http.NewRequest("POST", "/publisher/2/withdraw", nil)
         router.ServeHTTP(w, req)
-
         assert.Equal(t, http.StatusNotFound, w.Code)
         assert.Contains(t, w.Body.String(), "Publisher not found")
     })
@@ -138,10 +169,8 @@ func TestPublisherWithdraw(t *testing.T) {
         ctrl := PublisherController{Repo: mockRepo}
         router := gin.Default()
         router.POST("/publisher/:id/withdraw", ctrl.PublisherWithdraw)
-
         publisher := models.Publisher{Model: gorm.Model{ID: 1}, Credit: 100}
         mockRepo.On("FindByID", uint(1)).Return(publisher, nil)
-
         w := httptest.NewRecorder()
         form := url.Values{}
         form.Set("amount", "invalid")
@@ -158,17 +187,14 @@ func TestPublisherWithdraw(t *testing.T) {
         ctrl := PublisherController{Repo: mockRepo}
         router := gin.Default()
         router.POST("/publisher/:id/withdraw", ctrl.PublisherWithdraw)
-
         publisher := models.Publisher{Model: gorm.Model{ID: 1}, Credit: 50}
         mockRepo.On("FindByID", uint(1)).Return(publisher, nil)
-
         w := httptest.NewRecorder()
         form := url.Values{}
         form.Set("amount", "100")
         req, _ := http.NewRequest("POST", "/publisher/1/withdraw", strings.NewReader(form.Encode()))
         req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
         router.ServeHTTP(w, req)
-
         assert.Equal(t, http.StatusBadRequest, w.Code)
         assert.Contains(t, w.Body.String(), "Insufficient balance")
     })
@@ -178,18 +204,20 @@ func TestPublisherWithdraw(t *testing.T) {
         ctrl := PublisherController{Repo: mockRepo}
         router := gin.Default()
         router.POST("/publisher/:id/withdraw", ctrl.PublisherWithdraw)
-
         publisher := models.Publisher{Model: gorm.Model{ID: 1}, Credit: 100}
         mockRepo.On("FindByID", uint(1)).Return(publisher, nil)
         mockRepo.On("Update", mock.AnythingOfType("*models.Publisher")).Return(nil)
-
         w := httptest.NewRecorder()
         form := url.Values{}
         form.Set("amount", "50")
         req, _ := http.NewRequest("POST", "/publisher/1/withdraw", strings.NewReader(form.Encode()))
         req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
         router.ServeHTTP(w, req)
-
         assert.Equal(t, http.StatusSeeOther, w.Code)
     })
 }
+
+
+// ---------------------------------------------------------------PublisherWithdraw----------------------------------------------------------------
+
+
