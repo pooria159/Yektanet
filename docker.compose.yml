@@ -1,0 +1,76 @@
+services:
+  traefik:
+    image: "traefik:v3.1"
+    container_name: "traefik"
+    command:
+      #- "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entryPoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - ./config/traefik:/etc/traefik
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
+    networks:
+      - traefik
+    restart: always
+
+  adserver:
+    build:
+      context: ./Adserver
+      dockerfile: Dockerfile
+    ports:
+      - "9090:9090"
+    depends_on:
+      - panel
+    networks:
+      - traefik
+
+  eventserver:
+    build:
+      context: ./EventServer
+      dockerfile: Dockerfile
+    depends_on:
+      - adserver
+    networks:
+      - traefik
+
+  panel:
+    build:
+      context: ./Panel
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    environment:
+      - DSN=host=db
+      - user=postgres 
+      - password=postgres 
+      - dbname=postgres
+      - port=5432
+      - sslmode=disable
+    networks:
+      - traefik
+
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - traefik
+
+volumes:
+  postgres_data:
+
+networks:
+  traefik:
+    name: traefik

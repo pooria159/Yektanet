@@ -7,19 +7,29 @@ import (
 	"gorm.io/gorm"
 	"log"
 	"os"
+	"database/sql"
 )
 
 var DB *gorm.DB
 
 func Connect() {
-	//DSN=host=localhost user=postgres password=postgres dbname=postgres port=5432 sslmode=disable
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	host := os.Getenv("host")
+	port := os.Getenv("port")
+	user := os.Getenv("user")
+	password := os.Getenv("password")
+	dbname := os.Getenv("dbname")
 
-	dsn := os.Getenv("DSN")
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
+    	"password=%s dbname=%s sslmode=disable",
+			host, port, user, password, dbname)
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	log.Fatal("Error loading .env file")
+	// }
+
+	// dsn := os.Getenv("DSN")
+	// db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		log.Fatal("failed to connect to database: ", err)
 	}
