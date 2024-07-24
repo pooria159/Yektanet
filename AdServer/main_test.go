@@ -97,8 +97,8 @@ func TestTokenGeneration(t *testing.T) {
 			t.Errorf("Expected random token to be of length %d, actual length was %d.", i, len(randomToken))
 		}
 		for j := 0; j < i; j++ {
-			if randomToken[j] == '/' {
-				t.Errorf("Unexpected '/' in randomToken")
+			if randomToken[j] > 'z' || randomToken[j] < 'a' {
+				t.Errorf("Unexpected randomToken: %c", randomToken[j])
 			}
 		}
 	}

@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"bytes"
 
 	"github.com/gin-gonic/gin"
 )
@@ -89,7 +90,7 @@ func fetchAdsOnce() error {
 	// You can comment the next line and uncomment its following line
 	// in order to mock the response of Panel.
 	err = json.Unmarshal(responseByte, &allFetchedAds)
-	// err = json.Unmarshal(TEST_RAW_RESPONSE, &allFetchedAds)
+	//err := json.Unmarshal(TEST_RAW_RESPONSE, &allFetchedAds)
 	if (err != nil) {
 		log.Println("error in parsing response:")
 		return err
@@ -140,15 +141,14 @@ func randomInRange(a, b int) int {
 }
 
 /* Generate a random token of given size.
-   ASCII code of each character is between '0' and 'z' (inclusive).
-   Hence, it does not contain '/'. */
+   ASCII code of each character is between 'a' and 'z' (inclusive). */
 func generateRandomToken(size int) string {
 	var builder strings.Builder
 	builder.Reset()
 	var randomChar byte
 
 	for i := 0; i < size; i++ {
-		randomChar = byte(randomInRange('0', 'z' + 1)) // Select a random alphanumeric character.
+		randomChar = byte(randomInRange('a', 'z' + 1)) // Select a random alphanumeric character.
 		builder.WriteByte(randomChar)
 	}
 	return builder.String()
@@ -196,7 +196,22 @@ func getNewAd(c *gin.Context) {
 	publisherId, _ := strconv.Atoi(c.Query(PUBLISHER_ID_RECV_PARAM))
 	response := generateResponse(selectedAd, publisherId)
 	
-	c.IndentedJSON(http.StatusOK, response)
+	/* Gin's default JSON serializer escapes the '&' character.
+	   Hence, we use a costum serializer to generate the response
+	   string from the instantiated `response` object. */
+	var buf bytes.Buffer
+	buf.Reset()
+	encoder := json.NewEncoder(&buf)
+	encoder.SetEscapeHTML(false)
+
+	err := encoder.Encode(response)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.String(http.StatusOK, buf.String())
+	
 }
 
 func main() {
