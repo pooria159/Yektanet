@@ -6,7 +6,8 @@ import (
 	"io"
 	"log"
 	"math/rand"
-	"net/http"
+//	"net/http"
+	"dummies/http"
 	"strconv"
 	"strings"
 	"time"
@@ -19,7 +20,7 @@ import (
 var TEST_RAW_RESPONSE = []byte(`[{"Id":1,"Title":"12","ImagePath":"uploads\\treesample.png","BidValue":12,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}},{"Id":6,"Title":"144","ImagePath":"media\\treesample.png","BidValue":144,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}},{"Id":11,"Title":"test","ImagePath":"media/swoled_20240722144230_2.jpg","BidValue":12,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}},{"Id":10,"Title":"first","ImagePath":"media/s.jpg","BidValue":100,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}}]`)
 
 const ADSERVER_PORT = 9090	// The port on which AdServer listens.
-const FETCH_PERIOD = 60	// How many seconds to wait between fetching
+const FETCH_PERIOD = 4	// How many seconds to wait between fetching
 						// Ads from Panel.
 const FETCH_URL = "http://localhost:8080/api/v1/ads/active/"	// Address from which ads are to be fetched.
 const EVENT_URL = "http://localhost:7070/"						// Address to which ads are to be sent.
