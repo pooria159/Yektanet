@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go-ad-panel/models"
 	"go-ad-panel/repositories"
+	"gorm.io/gorm"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -161,4 +162,60 @@ func (ctrl AdController) HandleEvent(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Event successfully processed"})
+}
+func (ctrl AdController) HandleEventAtomic(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+
+	err = ctrl.Repo.WithTransaction(func(tx *gorm.DB) error {
+		ad, err := ctrl.Repo.FindByIDTx(tx, id)
+		if err != nil {
+			return err
+		}
+
+		var eventRequest EventRequest
+		if err := c.ShouldBindJSON(&eventRequest); err != nil {
+			return err
+		}
+
+		advertiser, err := ctrl.RepoAdvertiser.FindByIDTx(tx, int(uint(eventRequest.AdvertiserID)))
+		if err != nil {
+			return err
+		}
+
+		publisher, err := ctrl.RepoPublisher.FindByIDTx(tx, int(uint(eventRequest.PublisherID)))
+		if err != nil {
+			return err
+		}
+
+		switch eventRequest.EventType {
+		case "click":
+			ad.Clicks += 1
+			advertiser.Credit -= ad.BidValue
+			publisher.Credit += ad.BidValue
+		case "impression":
+			ad.Impressions += 1
+		}
+
+		if err := ctrl.Repo.UpdateTx(tx, &ad); err != nil {
+			return err
+		}
+		if err := ctrl.RepoAdvertiser.UpdateTx(tx, &advertiser); err != nil {
+			return err
+		}
+		if err := ctrl.RepoPublisher.UpdateTx(tx, &publisher); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process event"})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"message": "Event successfully processed"})
+	}
 }
