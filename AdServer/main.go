@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"math/rand"
@@ -23,7 +24,13 @@ const FETCH_PERIOD = 60	// How many seconds to wait between fetching
 const FETCH_URL = "http://localhost:8080/api/v1/ads/active/"	// Address from which ads are to be fetched.
 const EVENT_URL = "http://localhost:7070/"						// Address to which ads are to be sent.
 const API_TEMPLATE = "/api/ads/"									// URL that will be routed to the getNewAd handler.
-const PUBLISHER_ID_PARAM = "publisherID"						// Name of the parameter in URL that specifies publisher's id.
+const PUBLISHER_ID_RECV_PARAM 	= "publisherID"						// Name of the parameter in URL received from publisher that specifies publisher's id.
+
+/* Parameter names of the URL sent to publisher event server. */
+const PUBLISHER_ID_SEND_PARAM 	= "publisher_id"
+const USER_ID_SEND_PARAM		= "user_id"
+const AD_ID_SEND_PARAM			= "ad_id"
+const AD_URL_SEND_PARAM			= "ad_url"
 
 const PRINT_RESPONSE = true // Whether to print allAds after it is fetched.
 const USER_TOKEN_SIZE = 30	// User token is a random token attached to the sent click and impression link.
@@ -68,7 +75,10 @@ func fetchAdsOnce() error {
 		log.Println("error in doing request")
 		return err
 	}
-	
+	if (resp.StatusCode != http.StatusOK) {
+		log.Println("error in Panel:")
+		return errors.New("panel sent " + resp.Status)
+	}
 	responseByte, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("error in reading response body:")
@@ -78,8 +88,12 @@ func fetchAdsOnce() error {
 	
 	// You can comment the next line and uncomment its following line
 	// in order to mock the response of Panel.
-	json.Unmarshal(responseByte, &allFetchedAds)
-	// json.Unmarshal(TEST_RAW_RESPONSE, &allFetchedAds)
+	err = json.Unmarshal(responseByte, &allFetchedAds)
+	// err = json.Unmarshal(TEST_RAW_RESPONSE, &allFetchedAds)
+	if (err != nil) {
+		log.Println("error in parsing response:")
+		return err
+	}
 	
 	if PRINT_RESPONSE {
 		log.Printf("Successful Ad Fetch.\nallAds: %+v\n", allFetchedAds)
@@ -151,14 +165,14 @@ func generateEventServerLink(action string, selectedAd FetchedAd, requestingPubl
 	builder.Reset()
 	builder.WriteString(EVENT_URL)
 	builder.WriteString(action)
-	builder.WriteRune('/')
+	builder.WriteString("?" + USER_ID_SEND_PARAM + "=")
 	userToken := generateRandomToken(USER_TOKEN_SIZE)
 	builder.WriteString(userToken)
-	builder.WriteRune('/')
+	builder.WriteString("&" + PUBLISHER_ID_SEND_PARAM + "=")
 	builder.WriteString(strconv.Itoa(requestingPublisherId))
-	builder.WriteRune('/')
+	builder.WriteString("&" + AD_ID_SEND_PARAM + "=")
 	builder.WriteString(strconv.Itoa(selectedAd.Id))
-	builder.WriteRune('/')
+	builder.WriteString("&" + AD_URL_SEND_PARAM + "=")
 	builder.WriteString(selectedAd.RedirectLink)
 	return builder.String()
 }
@@ -179,7 +193,7 @@ func generateResponse(selectedAd FetchedAd, requestingPublisherId int) ResponseI
    for a new ad. */
 func getNewAd(c *gin.Context) {
 	selectedAd := selectAd()
-	publisherId, _ := strconv.Atoi(c.Query(PUBLISHER_ID_PARAM))
+	publisherId, _ := strconv.Atoi(c.Query(PUBLISHER_ID_RECV_PARAM))
 	response := generateResponse(selectedAd, publisherId)
 	
 	c.IndentedJSON(http.StatusOK, response)
