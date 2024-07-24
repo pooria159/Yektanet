@@ -23,6 +23,7 @@ func (t PublisherRepository) FindByID(id uint) (models.Publisher, error) {
 }
 
 var _ PublisherRepositoryInterface = (*PublisherRepository)(nil)
+
 func (t PublisherRepository) Update(p *models.Publisher) error {
 	result := t.Db.Save(&p)
 	return result.Error
@@ -40,3 +41,12 @@ func (t PublisherRepository) FindAll() ([]models.Publisher, error) {
 }
 
 var _ PublisherRepositoryInterface = (*PublisherRepository)(nil)
+
+func (t PublisherRepository) FindByIDTx(tx *gorm.DB, id int) (models.Publisher, error) {
+	var publisher models.Publisher
+	err := tx.First(&publisher, id).Error
+	return publisher, err
+}
+func (t PublisherRepository) UpdateTx(tx *gorm.DB, publisher *models.Publisher) error {
+	return tx.Save(publisher).Error
+}
