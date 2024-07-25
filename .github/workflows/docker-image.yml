@@ -1,0 +1,55 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.22.5
+        
+    - name: Build Go services
+      run: |
+        cd AdServer && go build -o adserver
+        cd ../EventServer && go build -o eventserver
+        cd ../Panel && go build -o panel
+        cd ../Publisher_Website && go build -o publisher
+
+    - name: Run tests
+      run: go test ./...
+
+    - name: Login to DockerHub
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+    - name: Build and push Docker images
+      run: |
+        docker build -t allyellow/adserver ./AdServer
+        docker build -t allyellow/eventserver ./EventServer
+        docker build -t allyellow/panel ./Panel
+        docker build -t allyellow/publisher ./Publisher_Website
+        docker push allyellow/adserver
+        docker push allyellow/eventserver
+        docker push allyellow/panel
+        docker push allyellow/publisher
+
+    - name: Deploy to server
+      env:
+        HOST: ${{ secrets.HOST }}
+        USER: ${{ secrets.USER }}
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        PORT: 2233
+      run: |
+        echo "${{ env.SSH_PRIVATE_KEY }}" > ssh_key
+        echo "here"
+    - name: Cleanup
+      run: rm ssh_key

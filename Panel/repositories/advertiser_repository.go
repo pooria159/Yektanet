@@ -47,3 +47,17 @@ func (t AdvertiserRepository) FindByIDWithAds(id uint) (models.Advertiser, []mod
 	adsResult := t.Db.Where("advertiser_id = ?", id).Order("title ASC").Find(&ads)
 	return advertiser, ads, adsResult.Error
 }
+
+
+
+var _ AdvertiserRepositoryInterface = (*AdvertiserRepository)(nil)
+
+func (t AdvertiserRepository) FindByIDTx(tx *gorm.DB, id int) (models.Advertiser, error) {
+	var advertiser models.Advertiser
+	err := tx.First(&advertiser, id).Error
+	return advertiser, err
+}
+func (t AdvertiserRepository) UpdateTx(tx *gorm.DB, advertiser *models.Advertiser) error {
+	return tx.Save(advertiser).Error
+}
+

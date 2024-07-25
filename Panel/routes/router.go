@@ -56,7 +56,7 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 		ads := v1.Group("/ads")
 		{
 			ads.GET("/active", adController.GetAllActiveAds)
-			ads.POST("/:id/event", adController.HandleEvent)
+			ads.POST("/:id/event", adController.HandleEventAtomic)
 		}
 	}
 
