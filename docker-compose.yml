@@ -1,128 +1,133 @@
 services:
   traefik:
-    image: "registry.docker.ir/traefik:v3.1"
-    container_name: "traefik"
-    command:
-      - "--api.insecure=true" # Enables the Traefik dashboard (insecure for local development)
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false" # Only expose services with specific labels
-      - "--entryPoints.web.address=:80" # HTTP entry point
-      - "--entryPoints.websecure.address=:443" # HTTPS entry point (optional if needed)
-      - "--entryPoints.traefik.address=:8080" # Entry point for Traefik dashboard
-    ports:
-      - "80:80"
-      - "8080:8080"
-    volumes:
-      # - ./config/traefik:/etc/traefik
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      # - ./letsencrypt:/letsencrypt
+    image: traefik:v2.5
+    container_name: traefik
+    restart: always
     networks:
       - traefik
-    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./traefik/config:/etc/traefik
+      - ./traefik/letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.portainer.entrypoints=web"
-      - "traefik.http.routers.traefik-dashboard.rule=PathPrefix(`/traefik`))"
-      - "traefik.http.middlewares.trafik-dashboard.stripprefix.prefixes=/traefik"
+      - "traefik.http.routers.traefik-dashboard.tls=true"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.tls.certresolver=production"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.lontra.tech`)"
       - "traefik.http.services.traefik-dashboard.loadbalancer.server.port=8080"
 
   portainer:
+    image: registry.docker.ir/portainer/portainer-ce:latest
     container_name: portainer
-    image: portainer/portainer-ce:latest
+    restart: always
     networks:
       - traefik
-    ports:
-      - 9443:9443
-      - 8000:8000
-      - 9000:9000
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.portainer.entrypoints=web"
-      - "traefik.http.routers.portainer.rule=PathPrefix(`portainer`)"
-      - "traefik.http.middlewares.portainer.stripprefix.prefixes=portainer"
-      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
-    restart: always
+      - "traefik.http.routers.portainer-dashboard.tls=true"
+      - "traefik.http.routers.portainer-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.portainer-dashboard.tls.certresolver=production"
+      - "traefik.http.services.portainer-dashboard.loadbalancer.server.port=9000"
+      - "traefik.http.routers.portainer-dashboard.rule=Host(`portainer.lontra.tech`)"
 
   adserver:
     build:
       context: ./AdServer
       dockerfile: Dockerfile
+    restart: always
+    command:
+      - ./adserver
     depends_on:
       - panel
     networks:
       - traefik
-    restart: always
     labels:
-      - "traefik.adserver.rule=PathPrefixStrip: /adserver"
-      - "traefik.port=9090"
-    command:
-      - ./adserver
+      - "traefik.enable=true"
+      - "traefik.http.routers.adserver.tls=true"
+      - "traefik.http.routers.adserver.entrypoints=websecure"
+      - "traefik.http.routers.adserver.tls.certresolver=production"
+      - "traefik.http.services.adserver.loadbalancer.server.port=8080"
+      - "traefik.http.routers.adserver.rule=Host(`adserver.lontra.tech`)"
 
   eventserver:
     build:
       context: ./EventServer
       dockerfile: Dockerfile
+    restart: always
+    command:
+      - ./eventserver
     depends_on:
       - publisher
     networks:
       - traefik
-    restart: always
     labels:
-      - "traefik.eventserver.rule=PathPrefixStrip: /eventserver"
-      - "traefik.port=8080"
-    command:
-      - ./eventserver
+      - "traefik.enable=true"
+      - "traefik.http.routers.eventserver.tls=true"
+      - "traefik.http.routers.eventserver.entrypoints=websecure"
+      - "traefik.http.routers.eventserver.tls.certresolver=production"
+      - "traefik.http.services.eventserver.loadbalancer.server.port=8080"
+      - "traefik.http.routers.eventserver.rule=Host(`eventserver.lontra.tech`)"
 
   panel:
     build:
       context: ./Panel
       dockerfile: Dockerfile
+    restart: always
+    command:
+      - ./panel
     depends_on:
       - db
     networks:
       - traefik
-    ports:
-      - "8082:8082"
-    restart: always
     labels:
-      - "traefik.panel.rule=PathPrefixStrip: /panel"
-      - "traefik.port=8082"
-    command:
-      - ./panel
+      - "traefik.enable=true"
+      - "traefik.http.routers.panel.tls=true"
+      - "traefik.http.routers.panel.entrypoints=websecure"
+      - "traefik.http.routers.panel.tls.certresolver=production"
+      - "traefik.http.services.panel.loadbalancer.server.port=8082"
+      - "traefik.http.routers.panel.rule=Host(`panel.lontra.tech`)"
 
   publisher:
     build:
       context: ./Publisher_Website
       dockerfile: Dockerfile
+    restart: always
+    command:
+      - ./publisher
     depends_on:
       - adserver
     networks:
       - traefik
-    restart: always
     labels:
-      - "traefik.publisher.rule=PathPrefixStrip: /publisher"
-      - "traefik.port=8081"
-    command:
-      - ./publisher
+      - "traefik.enable=true"
+      - "traefik.http.routers.publisher.tls=true"
+      - "traefik.http.routers.publisher.entrypoints=websecure"
+      - "traefik.http.routers.publisher.tls.certresolver=production"
+      - "traefik.http.services.publisher.loadbalancer.server.port=8080"
+      - "traefik.http.routers.publisher.rule=Host(`publisher.lontra.tech`)"
 
   pgadmin:
-    image: dpage/pgadmin4:latest
+    image: registry.docker.ir/dpage/pgadmin4:latest
     container_name: pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: pooriarahimi159@gmail.com
       PGADMIN_DEFAULT_PASSWORD: yektanet1234
-    ports:
-      - "5050:80"
+    restart: always
     networks:
       - traefik
-    restart: always
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.pgadmin.rule=PathPrefix(`/pgadmin/`)"
-      - "traefik.http.routers.pgadmin.entrypoints=web"
-      - "traefik.http.services.pgadmin.loadbalancer.server.port=5050"
+      - "traefik.http.routers.pgadmin.tls=true"
+      - "traefik.http.routers.pgadmin.entrypoints=websecure"
+      - "traefik.http.routers.pgadmin.tls.certresolver=production"
+      - "traefik.http.services.pgadmin.loadbalancer.server.port=80"
+      - "traefik.http.routers.pgadmin.rule=Host(`pgadmin.lontra.tech`)"
 
   db:
     image: postgres:14
@@ -130,13 +135,13 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: yektanet1234
       POSTGRES_DB: postgres_db
+    restart: always
+    networks:
+      - traefik
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - traefik
-    restart: always
 
 volumes:
   postgres_data:
