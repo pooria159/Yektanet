@@ -16,7 +16,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.23
+        go-version: 1.22.5
         
     - name: Build Go services
       run: |
@@ -50,9 +50,6 @@ jobs:
         PORT: 2233
       run: |
         echo "${{ env.SSH_PRIVATE_KEY }}" > ssh_key
-        chmod 600 ssh_key
-        scp -i ssh_key -P ${{ env.PORT }} docker-compose.yml ${{ env.USER }}@${{ env.HOST }}:/home/${{ env.USER }}/app
-        ssh -i ssh_key -p ${{ env.PORT }} ${{ env.USER }}@${{ env.HOST }} "cd /home/${{ env.USER }}/app && docker-compose down && docker-compose up -d"
-
+        echo "here"
     - name: Cleanup
       run: rm ssh_key
