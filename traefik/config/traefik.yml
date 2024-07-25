@@ -42,7 +42,7 @@ entryPoints:
 certificatesResolvers:
   production:
     acme:
-      email: info@tracer.finbright.org
+      email: pooriarahimi159@gmail.com
       storage: /letsencrypt/acme.json
       caServer: "https://acme-v02.api.letsencrypt.org/directory"
       httpChallenge:
