@@ -13,7 +13,7 @@ import (
 
 var DB *gorm.DB
 
-func Connect() {
+func ConnectWithLogger() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -40,7 +40,7 @@ func Connect() {
 	//return db
 }
 
-func Connect2() {
+func Connect() {
 	//DSN=host=localhost user=postgres password=postgres dbname=postgres port=5432 sslmode=disable
 	err := godotenv.Load()
 	if err != nil {
