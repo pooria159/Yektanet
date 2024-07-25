@@ -4,12 +4,16 @@ import (
 	"go-ad-panel/config"
 	"go-ad-panel/models"
 	"go-ad-panel/routes"
+
 	"log"
 )
 
 func main() {
+
+	config.CreateDB()
 	config.Connect()
 	config.Ping()
+
 	config.Migrate(&models.Publisher{}, &models.Advertiser{}, &models.Ad{})
 	router := routes.SetupRouter(config.DB)
 

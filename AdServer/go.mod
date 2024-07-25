@@ -1,4 +1,4 @@
-module github.com/Golanger-Team/Project-net/AdServer
+module go-ad-server
 
 go 1.22.5
 
