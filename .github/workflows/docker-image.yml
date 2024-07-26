@@ -21,10 +21,8 @@ jobs:
     - name: Build and test AdServer
       run: |
         cd AdServer
-        go mod edit -replace net/http=./dummies/http
-        go mod tidy
+        bash adserver-test-script
         go build -o adserver
-        go test ./...
         
     - name: Build and test Panel
       run: |
