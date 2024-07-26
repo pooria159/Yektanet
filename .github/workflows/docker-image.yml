@@ -29,7 +29,9 @@ jobs:
       run: |
         cd AdServer
         go mod tidy
+        go mod edit -replace net/http=./dummies/http
         go build -o adserver
+        go test ./...
 
     - name: Build and test EventServer
       run: |
