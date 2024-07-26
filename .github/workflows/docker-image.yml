@@ -21,24 +21,28 @@ jobs:
     - name: Build and test Panel
       run: |
         cd Panel
+        go mod tidy
         go build -o panel
         go test ./...
         
     - name: Build and test AdServer
       run: |
         cd AdServer
+        go mod tidy
         go build -o adserver
         go test ./...
 
     - name: Build and test EventServer
       run: |
         cd EventServer
+        go mod tidy
         go build -o eventserver
         go test ./...
 
     - name: Build and test Publisher
       run: |
         cd Publisher_Website
+        go mod tidy
         go build -o publisher
 
 
