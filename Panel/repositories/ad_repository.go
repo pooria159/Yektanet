@@ -21,6 +21,12 @@ func (t AdRepository) FindByIDTx(tx *gorm.DB, id int) (models.Ad, error) {
 func (t AdRepository) UpdateTx(tx *gorm.DB, ad *models.Ad) error {
 	return tx.Save(ad).Error
 }
+func (t AdRepository) IncrementImpressionsTx(tx *gorm.DB, ad *models.Ad) error {
+	return tx.Model(ad).Update("Impressions", gorm.Expr("Impressions + ?", 1)).Error
+}
+func (t AdRepository) IncrementClicksTx(tx *gorm.DB, ad *models.Ad) error {
+	return tx.Model(ad).Update("Clicks", gorm.Expr("Clicks + ?", 1)).Error
+}
 
 func (t AdRepository) Save(ad models.Ad) error {
 	result := t.Db.Create(&ad)
