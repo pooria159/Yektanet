@@ -68,6 +68,17 @@ jobs:
         PORT: 2233
       run: |
         echo "${{ env.SSH_PRIVATE_KEY }}" > ssh_key
-        echo "here"
+        chmod 600 ssh_key
+        # SCP to copy docker-compose.yml to the server
+        scp -P ${{ env.PORT }} -o StrictHostKeyChecking=no -i ssh_key ./docker-compose.yml ${{ env.USER }}@${{ env.HOST }}:/home/comp4/app/Project-net/        
+        # SSH to pull latest images and redeploy using Docker Compose
+        ssh -o StrictHostKeyChecking=no -i ssh_key ${{ env.USER }}@${{ env.HOST }} -p ${{ env.PORT }} << 'EOF'
+          cd /home/comp4/app/Project-net
+          docker-compose pull
+          docker-compose down
+          docker-compose up -d --force-recreate
+        EOF
+        echo "Deployment complete."
+
     - name: Cleanup
       run: rm ssh_key
