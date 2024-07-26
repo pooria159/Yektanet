@@ -20,10 +20,10 @@ jobs:
         
     - name: Build Go services
       run: |
-        cd AdServer && go build -o adserver
-        cd ../EventServer && go build -o eventserver
-        cd ../Panel && go build -o panel
-        cd ../Publisher_Website && go build -o publisher
+        cd AdServer && go mod tidy &&go build -o adserver
+        cd ../EventServer && go mod tidy && go build -o eventserver
+        cd ../Panel && go mod tidy && go build -o panel
+        cd ../Publisher_Website && go mod tidy && go build -o publisher
 
     - name: Run tests
       run: go test ./...
