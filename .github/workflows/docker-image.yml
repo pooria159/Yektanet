@@ -74,9 +74,8 @@ jobs:
         # SSH to pull latest images and redeploy using Docker Compose
         ssh -o StrictHostKeyChecking=no -i ssh_key ${{ env.USER }}@${{ env.HOST }} -p ${{ env.PORT }} << 'EOF'
           cd /home/comp4/app/Project-net
-          docker-compose pull
-          docker-compose down
-          docker-compose up -d --force-recreate
+          docker compose pull
+          docker compose up -d
         EOF
         echo "Deployment complete."
 
