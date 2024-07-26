@@ -18,6 +18,13 @@ jobs:
       with:
         go-version: 1.22.5
         
+    - name: Build and test AdServer
+      run: |
+        cd AdServer
+        go mod tidy
+        go mod edit -replace net/http=./dummies/http
+        go test ./...
+        
     - name: Build and test Panel
       run: |
         cd Panel
@@ -25,14 +32,6 @@ jobs:
         go build -o panel
         go test ./...
         
-    - name: Build and test AdServer
-      run: |
-        cd AdServer
-        go mod tidy
-        go mod edit -replace net/http=./dummies/http
-        go build -o adserver
-        go test ./...
-
     - name: Build and test EventServer
       run: |
         cd EventServer
