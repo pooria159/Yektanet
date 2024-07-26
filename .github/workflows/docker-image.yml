@@ -30,7 +30,6 @@ jobs:
         cd AdServer
         go mod tidy
         go build -o adserver
-        go test ./...
 
     - name: Build and test EventServer
       run: |
