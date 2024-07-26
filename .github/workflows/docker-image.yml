@@ -21,6 +21,7 @@ jobs:
     - name: Build and test AdServer
       run: |
         cd AdServer
+        go mod tidy
         bash adserver-test-script
         go build -o adserver
         
