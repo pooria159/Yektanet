@@ -9,38 +9,38 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/themes/prism.min.css"
     />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <style>
       body {
-        margin: 0;
-        padding: 0;
         font-family: Arial, sans-serif;
-        display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh;
         background-image: url('/static/image_back.jpg');
         background-size: cover;
         background-position: center;
-        background-repeat: no-repeat;
       }
 
       .container {
         display: flex;
         flex-direction: column;
         align-items: center;
-        background-color: rgba(255, 255, 255, 0.8);
+        background-color: #b8c2ac;
         padding: 30px;
         border-radius: 20px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         backdrop-filter: blur(100px);
-
+        margin: 40px auto;
+        max-width: 1000px;
       }
+
       .content {
         display: flex;
         justify-content: space-between;
         width: 100%;
         padding: 10px;
       }
+
       .info-container,
       .withdraw-container {
         flex: 1;
@@ -49,18 +49,20 @@
         background-color: #f9f9f9;
         border-radius: 20px;
       }
+
       .info-container h2,
       .withdraw-container h2 {
         margin-top: 0;
       }
+
       .code-container {
         position: relative;
         margin-bottom: 20px;
         padding: 0;
         width: 100%;
         border-radius: 20px;
-
       }
+
       .copy-button {
         position: absolute;
         top: 25px;
@@ -72,11 +74,12 @@
         cursor: pointer;
         z-index: 1;
         border-radius: 10px;
-
       }
+
       .copy-button:hover {
         background-color: #45a049;
       }
+
       .code-box {
         max-height: 480px;
         overflow: auto;
@@ -84,11 +87,12 @@
         background-color: #fff;
         position: relative;
         border-radius: 20px;
-
       }
+
       pre code {
         font-size: 12px;
       }
+
       .ad-container {
         border: 1px solid #ccc;
         padding: 10px;
@@ -98,14 +102,31 @@
         text-align: center;
         margin-bottom: 20px;
       }
+
       .ad-container img {
         max-width: 100%;
         max-height: 150px;
       }
+
       .amount-options button {
         margin: 5px;
         padding: 5px 10px;
         cursor: pointer;
+        border-radius: 10px;
+      }
+
+      .withdraw-button {
+        border-radius: 10px;
+      }
+
+      .language-html {
+        border-radius: 10px;
+      }
+
+      .chart-container {
+        margin-top: 20px;
+        width: 100%;
+        max-width: 800px;
       }
     </style>
   </head>
@@ -136,17 +157,19 @@
               <button type="button" onclick="setAmount(500)">500</button>
               <button type="button" onclick="setAmount(1000)">1000</button>
             </div>
-            <button type="submit">Withdraw</button>
+            <button type="submit" class="withdraw-button">Withdraw</button>
           </form>
         </section>
       </div>
       <section class="code-container">
         <div class="code-box">
           <button class="copy-button" onclick="copyCode()">Copy</button>
-          <pre
-            id="code"
-          ><code class="language-html">&lt;script src="http://localhost:8080/static/fetchAd.js?publisherID={{.publisher.ID}}"&gt;&lt;/script&gt;</code></pre>
+          <pre id="code"><code class="language-html">&lt;script src="https://panel.lontra.tech/static/fetchAd.js?{{.publisher.ID}}"&gt;&lt;/script&gt;</code></pre>
         </div>
+      </section>
+      <section class="chart-container">
+        <h2>Reports Over Time</h2>
+        <canvas id="myChart" width="400" height="200"></canvas>
       </section>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/prism.min.js"></script>
@@ -166,6 +189,76 @@
       function setAmount(value) {
         document.getElementById("amount").value = value;
       }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const myChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            datasets: [
+              {
+                label: 'Revenue',
+                data: [
+                  { x: '2024-07-01', y: 200 },
+                  { x: '2024-07-02', y: 250 },
+                  { x: '2024-07-03', y: 300 },
+                  { x: '2024-07-04', y: 400 },
+                ],
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 2,
+                pointRadius: 8,
+              },
+              {
+                label: 'Impressions',
+                data: [
+                  { x: '2024-07-01', y: 1500 },
+                  { x: '2024-07-02', y: 1800 },
+                  { x: '2024-07-03', y: 2200 },
+                  { x: '2024-07-04', y: 1000 },
+                ],
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 2,
+                pointRadius: 8,
+              },
+              {
+                label: 'Clicks',
+                data: [
+                  { x: '2024-07-01', y: 120 },
+                  { x: '2024-07-02', y: 140 },
+                  { x: '2024-07-03', y: 160 },
+                  { x: '2024-07-04', y: 200 },
+                ],
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 2,
+                pointRadius: 8,
+              },
+            ],
+          },
+          options: {
+            scales: {
+              x: {
+                type: 'time',
+                time: {
+                  unit: 'day',
+                },
+                title: {
+                  display: true,
+                  text: 'Date',
+                },
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: 'Value',
+                },
+              },
+            },
+          },
+        });
+      });
     </script>
   </body>
 </html>

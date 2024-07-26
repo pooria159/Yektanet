@@ -9,6 +9,25 @@ type AdRepository struct {
 	Db *gorm.DB
 }
 
+func (t AdRepository) WithTransaction(fn func(tx *gorm.DB) error) error {
+	return t.Db.Transaction(fn)
+}
+
+func (t AdRepository) FindByIDTx(tx *gorm.DB, id int) (models.Ad, error) {
+	var ad models.Ad
+	err := tx.First(&ad, id).Error
+	return ad, err
+}
+func (t AdRepository) UpdateTx(tx *gorm.DB, ad *models.Ad) error {
+	return tx.Save(ad).Error
+}
+func (t AdRepository) IncrementImpressionsTx(tx *gorm.DB, ad *models.Ad) error {
+	return tx.Model(ad).Update("Impressions", gorm.Expr("Impressions + ?", 1)).Error
+}
+func (t AdRepository) IncrementClicksTx(tx *gorm.DB, ad *models.Ad) error {
+	return tx.Model(ad).Update("Clicks", gorm.Expr("Clicks + ?", 1)).Error
+}
+
 func (t AdRepository) Save(ad models.Ad) error {
 	result := t.Db.Create(&ad)
 	return result.Error

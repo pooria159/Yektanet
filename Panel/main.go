@@ -7,13 +7,18 @@ import (
 	"log"
 )
 
+
+
 func main() {
+
+	config.CreateDB()
 	config.Connect()
 	config.Ping()
+
 	config.Migrate(&models.Publisher{}, &models.Advertiser{}, &models.Ad{})
 	router := routes.SetupRouter(config.DB)
 
-	if err := router.Run(":8080"); err != nil {
+	if err := router.Run(":8082"); err != nil {
 		log.Fatal("Failed to start server: ", err)
 	}
 }

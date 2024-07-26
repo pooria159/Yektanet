@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go-ad-panel/models"
 	"go-ad-panel/repositories"
+	"gorm.io/gorm"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -103,62 +104,121 @@ func (ctrl AdController) ToggleActivation(c *gin.Context) {
 //temp : only for phase 1
 
 type EventRequest struct {
-	EventType    string `json:"event_type" binding:"required"`
-	PublisherID  int    `json:"publisher_id" binding:"required"`
-	AdvertiserID int    `json:"advertiser_id" binding:"required"`
+	EventType   string `json:"event_type" binding:"required"`
+	PublisherID string `json:"publisher_id" binding:"required"`
 }
 
-func (ctrl AdController) HandleEvent(c *gin.Context) {
-	// Convert the id parameter from string to int
+//	func (ctrl AdController) HandleEvent(c *gin.Context) {
+//		// Convert the id parameter from string to int
+//		id, err := strconv.Atoi(c.Param("id"))
+//		if err != nil {
+//			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+//			return
+//		}
+//
+//		ad, err := ctrl.Repo.FindByID(id)
+//		if err != nil {
+//			c.JSON(http.StatusNotFound, gin.H{"error": "Ad not found"})
+//			return
+//		}
+//
+//		// Define a struct to bind JSON fields
+//		var eventRequest EventRequest
+//
+//		// Bind the JSON fields to the struct and check for errors
+//		if err := c.ShouldBindJSON(&eventRequest); err != nil {
+//			c.JSON(http.StatusBadRequest, gin.H{"error": "here"})
+//			return
+//		}
+//		advertiser, err := ctrl.RepoAdvertiser.FindByID(uint(eventRequest.AdvertiserID))
+//		if err != nil {
+//			c.JSON(http.StatusNotFound, gin.H{"error": "Advertiser not found"})
+//			return
+//		}
+//		publisher, err := ctrl.RepoPublisher.FindByID(uint(eventRequest.PublisherID))
+//		if err != nil {
+//			c.JSON(http.StatusNotFound, gin.H{"error": "Publisher not found"})
+//			return
+//		}
+//
+//		switch eventRequest.EventType {
+//		case "click":
+//			ad.Clicks += 1
+//			advertiser.Credit -= ad.BidValue
+//			publisher.Credit += ad.BidValue
+//		case "impression":
+//			ad.Impressions += 1
+//		default:
+//			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event type"})
+//			return
+//		}
+//		err = ctrl.Repo.Update(&ad)
+//		err = ctrl.RepoAdvertiser.Update(&advertiser)
+//		err = ctrl.RepoPublisher.Update(&publisher)
+//		if err != nil {
+//			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to handle error"})
+//			return
+//		}
+//
+//		c.JSON(http.StatusOK, gin.H{"message": "Event successfully processed"})
+//	}
+func (ctrl AdController) HandleEventAtomic(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
-	ad, err := ctrl.Repo.FindByID(id)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Ad not found"})
-		return
-	}
+	err = ctrl.Repo.WithTransaction(func(tx *gorm.DB) error {
+		ad, err := ctrl.Repo.FindByIDTx(tx, id)
+		if err != nil {
+			return err
+		}
+		advertiser_id := ad.AdvertiserID
 
-	// Define a struct to bind JSON fields
-	var eventRequest EventRequest
+		var eventRequest EventRequest
+		if err := c.ShouldBindJSON(&eventRequest); err != nil {
+			return err
+		}
 
-	// Bind the JSON fields to the struct and check for errors
-	if err := c.ShouldBindJSON(&eventRequest); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "here"})
-		return
-	}
-	advertiser, err := ctrl.RepoAdvertiser.FindByID(uint(eventRequest.AdvertiserID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Advertiser not found"})
-		return
-	}
-	publisher, err := ctrl.RepoPublisher.FindByID(uint(eventRequest.PublisherID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Publisher not found"})
-		return
-	}
+		advertiser, err := ctrl.RepoAdvertiser.FindByIDTx(tx, int(uint(advertiser_id)))
+		if err != nil {
+			return err
+		}
+		publisher_id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			return err
+		}
 
-	switch eventRequest.EventType {
-	case "click":
-		ad.Clicks += 1
-		advertiser.Credit -= ad.BidValue
-		publisher.Credit += ad.BidValue
-	case "impression":
-		ad.Impressions += 1
-	default:
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event type"})
-		return
-	}
-	err = ctrl.Repo.Update(&ad)
-	err = ctrl.RepoAdvertiser.Update(&advertiser)
-	err = ctrl.RepoPublisher.Update(&publisher)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to handle error"})
-		return
-	}
+		publisher, err := ctrl.RepoPublisher.FindByIDTx(tx, publisher_id)
+		if err != nil {
+			return err
+		}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Event successfully processed"})
+		switch eventRequest.EventType {
+		case "click":
+			if err := ctrl.RepoAdvertiser.DecreaseCredit(tx, &advertiser, ad.BidValue); err != nil {
+				return err
+			}
+			if err := ctrl.RepoPublisher.IncreaseCredit(tx, &publisher, ad.BidValue); err != nil {
+				return err
+			}
+			if err := ctrl.Repo.IncrementClicksTx(tx, &ad); err != nil {
+				return err
+			}
+		case "impression":
+			if err := ctrl.Repo.IncrementImpressionsTx(tx, &ad); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process event"})
+		fmt.Println(err.Error())
+	} else {
+		c.JSON(http.StatusOK, gin.H{"message": "Event successfully processed"})
+	}
 }

@@ -1,106 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Advertiser Panel</title>
-    <link rel="stylesheet" href="/static/styles.css">
-</head>
-<body>
-
-<div class="container">
-    <header>
+    <style>
+      body {
+        background-image: url("/static/image_back.jpg");
+        background-size: cover;
+        background-position: center;
+        font-family: Arial, sans-serif;
+      }
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 15px;
+        background-color: #b8c2ac;
+        border-radius: 20px;
+      }
+      header h1 {
+        color: green;
+        text-align: center;
+      }
+      section {
+        margin-bottom: 15px;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        background-color: #f9f9f9;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      #adsTable th, #adsTable td {
+        padding: 5px;
+        border: 1px solid #ddd;
+        text-align: center;
+      }
+      #chargeAccountTable th , #chargeAccountTable td,
+      #advertiserInfoTable th, #advertiserInfoTable td,
+      #createAdTable th, #createAdTable td {
+        padding: 5px;
+        border: 1px solid #ddd;
+        text-align: left;
+      }
+      
+      input,
+      button {
+        margin-bottom: 10px;
+        border-radius: 3px;
+      }
+      button {
+        padding: 10px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        background-color: green;
+        color: white;
+        width: 100%;
+      }
+      .enabled {
+        background-color: green;
+        color: white;
+      }
+      .disabled {
+        background-color: red;
+        color: white;
+      }
+      .ad-title {
+        color: blue;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+      .ad-image {
+        width: 100px;
+        height: 80px;
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
         <h1>Advertiser Panel</h1>
-    </header>
-    <section>
+      </header>
+      <section>
         <h2>Advertiser Information</h2>
-        <p><strong>Name:</strong> {{.advertiser.Name}}</p>
-        <p><strong>Balance:</strong> ${{.advertiser.Credit}}</p>
-    </section>
-    <section>
+        <table id="advertiserInfoTable">
+          <tr>
+            <th>Name</th>
+            <td>{{.advertiser.Name}}</td>
+          </tr>
+          <tr>
+            <th>Balance</th>
+            <td>${{.advertiser.Credit}}</td>
+          </tr>
+        </table>
+      </section>
+      <section>
         <h2>Create Ad</h2>
-        <form action="/advertisers/{{.advertiser.ID}}/ad" method="post" enctype="multipart/form-data">
-            <label for="title">Title:</label>
-            <input type="text" id="title" name="title" required>
-            <label for="image">Image File:</label>
-            <input type="file" id="image" name="image" required>
-            <label for="bid">Bid:</label>
-            <input type="text" id="bid" name="bid" required>
-            <button type="submit">Create Ad</button>
-        </form>
-    </section>
-    <section>
-        <h2>Ads</h2>
-        <table>
-            <thead>
+        <form
+          action="/advertisers/{{.advertiser.ID}}/ad"
+          method="post"
+          enctype="multipart/form-data"
+        >
+          <table id="createAdTable">
             <tr>
-                <th>Title</th>
-                <th>Image</th>
-                <th>Bid</th>
-                <th>Impressions</th>
-                <th>Clicks</th>
-                <th>CTR</th>
-                <th>Status</th>
+              <th><label for="title">Title:</label></th>
+              <td><input type="text" id="title" name="title" required /></td>
             </tr>
-            </thead>
-            <tbody>
+            <tr>
+              <th><label for="image">Image File:</label></th>
+              <td><input type="file" id="image" name="image" required /></td>
+            </tr>
+            <tr>
+              <th><label for="bid">Bid:</label></th>
+              <td><input type="text" id="bid" name="bid" required /></td>
+            </tr>
+            <tr>
+              <td colspan="2"><button type="submit">Create Ad</button></td>
+            </tr>
+          </table>
+        </form>
+      </section>
+      <section>
+        <h2>Ads</h2>
+        <table id="adsTable">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Image</th>
+              <th>Bid</th>
+              <th>Impressions</th>
+              <th>Clicks</th>
+              <th>CTR</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="adTable">
             {{range .ads}}
             <tr>
-                <td>{{.Title}}</td>
-                <td><img src="../{{.ImagePath}}" alt="{{.Title}}" width="100"></td>
-                <td>{{.BidValue}}</td>
-                <td>{{.Impressions}}</td>
-                <td>{{.Clicks}}</td>
-                <td><script>
-                    function calculateCTR(clicks, impressions) {
-                        const clicksNum = Number(clicks);
-                        const impressionsNum = Number(impressions);
-                        return impressionsNum === 0 ? "0" : (clicksNum / impressionsNum).toFixed(2).toString();
-                    }
-                    document.write(calculateCTR('{{.Clicks}}', '{{.Impressions}}'));
-                    </script>
-                </td>
-                <td>
-                    <button onclick="toggleAdStatus('{{.ID}}')">
-                    {{if .IsActive}}Enabled{{else}}Disabled{{end}}
-                    </button>
-                </td>
+              <td><a href="/ads/{{.ID}}" class="ad-title">{{.Title}}</a></td>
+              <td>
+                <img src="../{{.ImagePath}}" alt="{{.Title}}" class="ad-image" />
+              </td>
+              <td>{{.BidValue}}</td>
+              <td>{{.Impressions}}</td>
+              <td>{{.Clicks}}</td>
+              <td class="ctr"></td>
+              <td>
+                <button
+                  class="{{if .IsActive}}enabled{{else}}disabled{{end}}"
+                  onclick="toggleAdStatus('{{.ID}}')"
+                >
+                  {{if .IsActive}}Enabled{{else}}Disabled{{end}}
+                </button>
+              </td>
             </tr>
             {{end}}
-            </tbody>
+          </tbody>
         </table>
-    </section>
-    <section>
+      </section>
+      <section>
         <h2>Charge Account</h2>
         <form action="/advertisers/{{.advertiser.ID}}/charge" method="post">
-            <label for="amount">Amount:</label>
-            <input type="text" id="amount" name="amount" required>
-            <button type="submit">Charge</button>
+          <table id="chargeAccountTable">
+            <tr>
+              <th><label for="amount">Amount:</label></th>
+              <td><input type="text" id="amount" name="amount" required /></td>
+            </tr>
+            <tr>
+              <td colspan="2"><button type="submit">Charge</button></td>
+            </tr>
+          </table>
         </form>
-    </section>
-</div>
-<script>
-    function toggleAdStatus( adId) {
+      </section>
+    </div>
+    <script>
+      function calculateCTR(clicks, impressions) {
+        if (impressions === 0) {
+          return "0 %";
+        }
+        return ((clicks / impressions) * 100).toFixed(2) + " %";
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const rows = document.querySelectorAll("#adTable tr");
+        rows.forEach((row) => {
+          const clicks = parseInt(row.cells[4].textContent, 10);
+          const impressions = parseInt(row.cells[3].textContent, 10);
+          row.querySelector(".ctr").textContent = calculateCTR(
+            clicks,
+            impressions
+          );
+        });
+      });
+      function toggleAdStatus(adId) {
         const url = `/ads/${adId}/toggle`;
         fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({})
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}),
         })
-            .then(response => {
-                if (response.ok) {
-                    location.reload();
-                } else {
-                    console.error('Failed to toggle ad status');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    }
-</script>
-
-</body>
+          .then((response) => {
+            if (response.ok) {
+              location.reload();
+            } else {
+              console.error("Failed to toggle ad status");
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+    </script>
+  </body>
 </html>
