@@ -1,0 +1,13 @@
+# Modifications necessary for testing
+mv main.go main.go.copy
+sed 's/const FETCH_PERIOD = 60/const FETCH_PERIOD = 4/' main.go.copy > main.modified-fetch
+sed 's/\"net\/http\"/\"dummies\/http\"/' main.modified-fetch > main.go
+rm main.modified-fetch
+
+
+# Running the test
+go test .
+
+# Reverting modifications
+rm main.go
+mv main.go.copy main.go
