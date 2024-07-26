@@ -18,15 +18,29 @@ jobs:
       with:
         go-version: 1.22.5
         
-    - name: Build Go services
+    - name: Build and test Panel
       run: |
-        cd AdServer && go mod tidy &&go build -o adserver
-        cd ../EventServer && go mod tidy && go build -o eventserver
-        cd ../Panel && go mod tidy && go build -o panel
-        cd ../Publisher_Website && go mod tidy && go build -o publisher
+        cd Panel
+        go build -o panel
+        go test ./...
+        
+    - name: Build and test AdServer
+      run: |
+        cd AdServer
+        go build -o adserver
+        go test ./...
 
-    - name: Run tests
-      run: go test ./...
+    - name: Build and test EventServer
+      run: |
+        cd EventServer
+        go build -o eventserver
+        go test ./...
+
+    - name: Build and test Publisher
+      run: |
+        cd Publisher_Website
+        go build -o publisher
+
 
     - name: Login to DockerHub
       run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
