@@ -11,7 +11,7 @@
     fetch(`https://adserver.lontra.tech/api/ads?publisherID=${publisherID}`)
       .then(response => response.json())
       .then(data => {
-        console.log("COWWWWWWWWWWWWWWWW" + data);
+        console.log("Received data:", JSON.stringify(data, null, 2));
         if (data && data.length > 0) {
           const ad = data[0];
           const adContent = `
