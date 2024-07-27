@@ -48,11 +48,10 @@ type FetchedAd struct {
 }
 
 type ResponseInfo struct {
-	Title          string `json:"Title"`
-	ImagePath      string `json:"ImagePath"`
-	ClickLink      string `json:"ClickLink"`
-	ImpressionLink string `json:"ImpressionLink"`
-	RedirectLink   string `json:"RedirectLink"`
+	Title			string 	`json:"Title"`
+	ImagePath		string	`json:"ImagePath"`
+	ClickLink		string	`json:"ClickLink"`
+	ImpressionLink	string	`json:"ImpressionLink"`
 }
 
 /* Global Objects */
@@ -200,11 +199,13 @@ Makes a Response instance, puts info that is to be sent
 */
 func generateResponse(selectedAd FetchedAd, requestingPublisherId int) ResponseInfo {
 	var response ResponseInfo
-	response.Title = selectedAd.Title
-	response.ImagePath = selectedAd.ImageSource
-	response.RedirectLink = selectedAd.RedirectLink
-	response.ClickLink = generateEventServerLink("click", selectedAd, requestingPublisherId)
-	response.ImpressionLink = generateEventServerLink("impression", selectedAd, requestingPublisherId)
+	/* Hard-code the redirect link because Panel still does not
+	 * return a valid one.*/
+	selectedAd.RedirectLink = `www.google.com`
+	response.Title			= selectedAd.Title
+	response.ImagePath		= selectedAd.ImageSource
+	response.ClickLink		= generateEventServerLink("click", selectedAd, requestingPublisherId)	
+	response.ImpressionLink	= generateEventServerLink("impression", selectedAd, requestingPublisherId)
 	return response
 }
 
