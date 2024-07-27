@@ -50,6 +50,7 @@ func TestIfFetchedInTime(t *testing.T) {
 	/* Now it is expected for allFetchedAds to be updates. */
 	if len(allFetchedAds) != 1 {
 		t.Errorf("allAds is not updated properly.")
+		return
 	}
 	var theAd = allFetchedAds[0]
 	if 	theAd.Id 			!= 333 ||

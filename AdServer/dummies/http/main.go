@@ -28,6 +28,7 @@ var doResponseReturn Response
 var doErrorReturn error
 
 const StatusOK = 200
+const StatusInternalServerError = 500
 
 func SetNewRequestReturn(s string, e error) {
 	newRequestUrlReturn = s

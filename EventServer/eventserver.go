@@ -121,10 +121,9 @@ func (s *EventServer) handleClick(c *gin.Context) {
 
 // callInternalAPI simulates calling an internal API to handle the click
 func (s *EventServer) callAPI(event Event) error {
-	url := "http://example/update"
+	url := fmt.Sprintf("http://localhost:8080/api/v1/ads/%s/event", event.AdID)
 	payload := map[string]interface{}{
 		"publisher_id": event.PublisherID,
-		"ad_id":        event.AdID,
 		"event_type":   event.EventType,
 	}
 	body, _ := json.Marshal(payload)
@@ -144,6 +143,7 @@ func (s *EventServer) callAPI(event Event) error {
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("received non-200 response: %d", resp.StatusCode)
 	}
+	fmt.Println("stat was 200")
 	return nil
 }
 
@@ -175,7 +175,7 @@ func main() {
 	go server.processEvents()
 
 	// Start the server on port 8080
-	err := router.Run(":8080")
+	err := router.Run(":8081")
 	if err != nil {
 		fmt.Printf("Failed to start server: %v\n", err)
 	}

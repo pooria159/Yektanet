@@ -50,3 +50,6 @@ func (t PublisherRepository) FindByIDTx(tx *gorm.DB, id int) (models.Publisher, 
 func (t PublisherRepository) UpdateTx(tx *gorm.DB, publisher *models.Publisher) error {
 	return tx.Save(publisher).Error
 }
+func (t PublisherRepository) IncreaseCredit(tx *gorm.DB, publisher *models.Publisher, bid int) error {
+	return tx.Model(publisher).Update("Credit", gorm.Expr("Credit + ?", bid)).Error
+}
