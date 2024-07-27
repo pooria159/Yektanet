@@ -79,8 +79,6 @@ services:
       - db
     networks:
       - traefik
-    volumes:
-      - ad_images_data:/app/uploads
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.panel.tls=true"
@@ -139,7 +137,6 @@ services:
 
 volumes:
   postgres_data:
-  ad_images_data:
 
 networks:
   traefik:
