@@ -3,7 +3,7 @@
     const adContainer = document.getElementById('ad-container');
     
     function fetchAd() {
-        fetch(`http://localhost:8080//api/ads?${publisherID}`)
+        fetch(`http://adserver.lontra.tech/api/ads?publisherID=${publisherID}`)
             .then(response => response.json())
             .then(data => {
                 if (data && data.length > 0) {
