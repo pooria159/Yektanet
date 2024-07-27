@@ -12,7 +12,7 @@
       .then(response => response.json())
       .then(data => {
         console.log("Received data:", JSON.stringify(data, null, 2));
-        if (data && data.length > 0) {
+        if (data) {
           const ad = data;
           const adContent = `
                 <img src="${ad.ImagePath}" alt="${ad.Title}" style="width:100%;" />
