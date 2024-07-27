@@ -13,12 +13,13 @@
       .then(data => {
         console.log("Received data:", JSON.stringify(data, null, 2));
         if (data && data.length > 0) {
-          const ad = data[0];
+          const ad = data;
           const adContent = `
                 <img src="${ad.ImagePath}" alt="${ad.Title}" style="width:100%;" />
                 <h3>${ad.Title}</h3>
-                <a href="${ad.ClickLink}" target="_blank" class="click-here">Click here</a>
+                <a ${ad.ClickLink} target="_blank" class="click-here">Click here</a>
               `;
+              // delete href
           adContainer.innerHTML = adContent;
           const observer = new IntersectionObserver((entries) => {
             if (entries[0].isIntersecting) {
@@ -39,7 +40,8 @@
               .then(response => response.json())
               .then(data => {
                 console.log('Click recorded:', data);
-                window.open(ad.ClickLink, '_blank');
+                // window.open(ad.ClickLink, '_blank');
+                // dont use it
               })
               .catch(error => {
                 console.error('Error recording click:', error);
