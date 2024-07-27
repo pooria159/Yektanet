@@ -9,8 +9,11 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
+
+var JWT_ENCRYPTION_KEY = []byte("Golangers:Pooria-Mohammad-Roya-Sina") // Encryption key used to sign responses.
 
 // Event represents an event with user, publisher, ad IDs and URL
 type Event struct {
@@ -19,6 +22,8 @@ type Event struct {
 	AdID        string
 	AdURL       string
 	EventType   string
+
+	jwt.StandardClaims
 }
 
 // Value represents the value stored in impression and clicks
@@ -47,20 +52,17 @@ func NewEventServer() *EventServer {
 
 // handleImpression handles the impression events
 func (s *EventServer) handleImpression(c *gin.Context) {
-	userID := c.Query("user_id")
-	publisherID := c.Query("publisher_id")
-	adID := c.Query("ad_id")
-
-	if userID == "" || publisherID == "" || adID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing required query parameters"})
-		return
+	// Extract event information from url
+	eventInfoToken := c.Param("info")
+	var event Event
+	parsedToken, err := jwt.ParseWithClaims(eventInfoToken, &event, func(t *jwt.Token) (interface{}, error) {
+		return JWT_ENCRYPTION_KEY, nil
+	})
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
 	}
-
-	event := Event{
-		UserID:      userID,
-		PublisherID: publisherID,
-		AdID:        adID,
-		EventType:   "impression",
+	if !parsedToken.Valid {
+		c.AbortWithStatus(http.StatusBadRequest)
 	}
 
 	if _, ok := s.impressions[event.UserID]; !ok {
@@ -82,26 +84,19 @@ func (s *EventServer) handleImpression(c *gin.Context) {
 
 // handleClick handles the click events
 func (s *EventServer) handleClick(c *gin.Context) {
-	// Retrieve query parameters
-	userID := c.Query("user_id")
-	publisherID := c.Query("publisher_id")
-	adID := c.Query("ad_id")
-	adURL := c.Query("ad_url")
-
-	// Check for missing parameters
-	if userID == "" || publisherID == "" || adID == "" || adURL == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing required query parameters"})
-		return
+	// Extract event information from url
+	eventInfoToken := c.Param("info")
+	var event Event
+	parsedToken, err := jwt.ParseWithClaims(eventInfoToken, &event, func(t *jwt.Token) (interface{}, error) {
+		return JWT_ENCRYPTION_KEY, nil
+	})
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
 	}
-
-	event := Event{
-		UserID:      userID,
-		PublisherID: publisherID,
-		AdID:        adID,
-		AdURL:       adURL,
-		EventType:   "click",
+	if !parsedToken.Valid {
+		c.AbortWithStatus(http.StatusBadRequest)
 	}
-
+	
 	if _, ok := s.clicks[event.UserID]; !ok {
 		value := Value{
 			AdID:        event.AdID,
@@ -160,8 +155,8 @@ func (s *EventServer) sendToKafka(event Event, eventType string) {
 // SetupRouter sets up the routes for the EventServer
 func (s *EventServer) SetupRouter() *gin.Engine {
 	router := gin.Default()
-	router.POST("/impression", s.handleImpression)
-	router.POST("/click", s.handleClick)
+	router.GET("/impression/:info", s.handleImpression)
+	router.GET("/click/:info", s.handleClick)
 	return router
 }
 
