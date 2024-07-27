@@ -1,10 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/gin-contrib/cors"
 	"io"
 	"log"
 	"math/rand"
@@ -12,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gin-contrib/cors"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -29,13 +29,13 @@ const EVENT_URL = "https://eventserver.lontra.tech/"             // Address to w
 const API_TEMPLATE = "/api/ads/"                                 // URL that will be routed to the getNewAd handler.
 const PUBLISHER_ID_RECV_PARAM = "publisherID"                    // Name of the parameter in URL received from publisher that specifies publisher's id.
 
-
-const PRINT_RESPONSE = true // Whether to print allAds after it is fetched.
-const USER_TOKEN_SIZE = 30	// User token is a random token attached to the sent click and impression link.
-var JWT_ENCRYPTION_KEY = []byte("Golangers:Pooria-Mohammad-Roya-Sina")	// Encryption key used to sign responses.
+const PRINT_RESPONSE = true                                            // Whether to print allAds after it is fetched.
+const USER_TOKEN_SIZE = 30                                             // User token is a random token attached to the sent click and impression link.
+var JWT_ENCRYPTION_KEY = []byte("Golangers:Pooria-Mohammad-Roya-Sina") // Encryption key used to sign responses.
 
 /* User-defined Types and Structs */
 
+/* Holds the information contained in fetched ads from Panel. */
 type FetchedAd struct {
 	Id           int    `json:"Id"`
 	Title        string `json:"Title"`
@@ -44,8 +44,9 @@ type FetchedAd struct {
 	RedirectLink string `json:"RedirectLink"`
 }
 
+/* This struct will be signed by AdServer and eventually sent to Event Server. */
 type EventInfo struct {
-	UserID		string
+	UserID      string
 	PublisherID string
 	AdID        string
 	AdURL       string
@@ -54,13 +55,13 @@ type EventInfo struct {
 	jwt.StandardClaims
 }
 
+/* This information gets serialized to JSON and will be sent to Publisher. */
 type ResponseInfo struct {
-	Title			string 	`json:"Title"`
-	ImagePath		string	`json:"ImagePath"`
-	ClickLink		string	`json:"ClickLink"`
-	ImpressionLink	string	`json:"ImpressionLink"`
+	Title          string `json:"Title"`
+	ImagePath      string `json:"ImagePath"`
+	ClickLink      string `json:"ClickLink"`
+	ImpressionLink string `json:"ImpressionLink"`
 }
-
 
 /* Global Objects */
 
@@ -70,9 +71,8 @@ var allFetchedAds []FetchedAd // A slice containing all ads.
 
 /*
 Issues a request to Panel and obtains all available
-
-	ads as the response. Returns the first encountered
-	error, if any.
+ads as the response. Returns the first encountered
+error, if any.
 */
 func fetchAdsOnce() error {
 	client := http.DefaultClient
@@ -115,10 +115,9 @@ func fetchAdsOnce() error {
 
 /*
 In an infinite loop, calls fetchAdsOnce and
-
-	checks if any error has occured. If so, logs the error
-	and waits for half of normal waiting interval. If not,
-	waits for `FETCH_PERIOD` seconds.
+checks if any error has occured. If so, logs the error
+and waits for half of normal waiting interval. If not,
+waits for `FETCH_PERIOD` seconds.
 */
 func periodicallyFetchAds() {
 	var err error
@@ -133,6 +132,10 @@ func periodicallyFetchAds() {
 	}
 }
 
+/*
+Selects best ads based on AdServer's policy.
+Current policy: to select ad with highest bid.
+*/
 func selectAd() FetchedAd {
 	var bestAd FetchedAd
 	var maxBid int = 0
@@ -173,10 +176,12 @@ func generateRandomToken(size int) string {
 	return builder.String()
 }
 
-/* Generates raw event link and signs it using the 
- private key of AdServer. */
+/*
+Generates raw event link and signs it using the
+private key of AdServer.
+*/
 func generateSignedEventInfo(action string, selectedAd FetchedAd, requestingPublisherId int) (string, error) {
-	var eventInfo EventInfo 
+	var eventInfo EventInfo
 	eventInfo.AdID = strconv.Itoa(selectedAd.Id)
 	eventInfo.PublisherID = strconv.Itoa(requestingPublisherId)
 	eventInfo.UserID = generateRandomToken(USER_TOKEN_SIZE)
@@ -190,31 +195,35 @@ func generateSignedEventInfo(action string, selectedAd FetchedAd, requestingPubl
 	return EVENT_URL + action + "/" + signedInfo, nil
 }
 
-/* Makes a Response instance, puts info that is to be sent 
-   in it and returns it. */
+/*
+Makes a Response instance, puts info that is to be sent
+in it and returns it.
+*/
 func makeResopnse(selectedAd FetchedAd, requestingPublisherId int) (ResponseInfo, error) {
 	var response ResponseInfo
 	var err error
 	/* Hard-code the redirect link because Panel still does not
-	 * return a valid one.*/
-	selectedAd.RedirectLink 		= `www.google.com`
+	return a valid one.*/
+	selectedAd.RedirectLink = `www.google.com`
 
-	response.Title					= selectedAd.Title
-	response.ImagePath				= selectedAd.ImageSource
-	response.ClickLink, err			= generateSignedEventInfo("click", selectedAd, requestingPublisherId)	
+	response.Title = selectedAd.Title
+	response.ImagePath = selectedAd.ImageSource
+	response.ClickLink, err = generateSignedEventInfo("click", selectedAd, requestingPublisherId)
 	if err != nil {
 		return response, err
 	}
-	response.ImpressionLink, err	= generateSignedEventInfo("impression", selectedAd, requestingPublisherId)
+	response.ImpressionLink, err = generateSignedEventInfo("impression", selectedAd, requestingPublisherId)
 	if err != nil {
 		return response, err
 	}
 	return response, nil
 }
 
-/* Signs the information Event Server needed
- with AdServer's internal private key, so that
- it will be shown that it is really generated by AdServer. */
+/*
+Signs the information Event Server needed
+with AdServer's internal private key, so that
+it will be shown that it is really generated by AdServer.
+*/
 func signEvent(event *EventInfo) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, event)
 	signedTokenString, err := token.SignedString(JWT_ENCRYPTION_KEY)
@@ -224,13 +233,15 @@ func signEvent(event *EventInfo) (string, error) {
 	return signedTokenString, nil
 }
 
-/* Handels GET requests from publishers requesting
-   for a new ad. */
+/*
+Handels GET requests from publishers requesting
+for a new ad.
+*/
 func getNewAd(c *gin.Context) {
 	selectedAd := selectAd()
 	publisherId, _ := strconv.Atoi(c.Query(PUBLISHER_ID_RECV_PARAM))
 	response, err := makeResopnse(selectedAd, publisherId)
-	
+
 	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 	}
