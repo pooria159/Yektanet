@@ -37,9 +37,7 @@ services:
       - "traefik.http.routers.portainer-dashboard.rule=Host(`portainer.lontra.tech`)"
 
   adserver:
-    build:
-      context: ./AdServer
-      dockerfile: Dockerfile
+    image: allyellow/adserver:latest
     restart: always
     command:
       - ./adserver
@@ -56,9 +54,7 @@ services:
       - "traefik.http.routers.adserver.rule=Host(`adserver.lontra.tech`)"
 
   eventserver:
-    build:
-      context: ./EventServer
-      dockerfile: Dockerfile
+    image: allyellow/eventserver:latest
     restart: always
     command:
       - ./eventserver
@@ -75,9 +71,7 @@ services:
       - "traefik.http.routers.eventserver.rule=Host(`eventserver.lontra.tech`)"
 
   panel:
-    build:
-      context: ./Panel
-      dockerfile: Dockerfile
+    image: allyellow/panel:latest
     restart: always
     command:
       - ./panel
@@ -94,9 +88,7 @@ services:
       - "traefik.http.routers.panel.rule=Host(`panel.lontra.tech`)"
 
   publisher:
-    build:
-      context: ./Publisher_Website
-      dockerfile: Dockerfile
+    image: allyellow/publisher:latest
     restart: always
     command:
       - ./publisher
