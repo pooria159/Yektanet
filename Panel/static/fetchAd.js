@@ -1,6 +1,8 @@
 (function () {
   const publisherID = document.currentScript.getAttribute('id');
+  console.log("Meoooooooooooooo" + publisherID);
   const adContainer = document.getElementById('adBox');
+  console.log("SAGGGGGGGGGGGGG" + adContainer);
   if (!adContainer) {
     console.error('Ad container element not found.');
     return;
@@ -9,6 +11,7 @@
     fetch(`https://adserver.lontra.tech/api/ads?publisherID=${publisherID}`)
       .then(response => response.json())
       .then(data => {
+        console.log("COWWWWWWWWWWWWWWWW" + data);
         if (data && data.length > 0) {
           const ad = data[0];
           const adContent = `
