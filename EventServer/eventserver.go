@@ -121,7 +121,7 @@ func (s *EventServer) handleClick(c *gin.Context) {
 
 // callInternalAPI simulates calling an internal API to handle the click
 func (s *EventServer) callAPI(event Event) error {
-	url := fmt.Sprintf("http://localhost:8080/api/v1/ads/%s/event", event.AdID)
+	url := fmt.Sprintf("http://panel.lontra.tech/api/v1/ads/%s/event", event.AdID)
 	payload := map[string]interface{}{
 		"publisher_id": event.PublisherID,
 		"event_type":   event.EventType,
@@ -174,7 +174,6 @@ func main() {
 	// Start processing events
 	go server.processEvents()
 
-	// Start the server on port 8080
 	err := router.Run(":8081")
 	if err != nil {
 		fmt.Printf("Failed to start server: %v\n", err)

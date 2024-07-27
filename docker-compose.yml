@@ -50,7 +50,7 @@ services:
       - "traefik.http.routers.adserver.tls=true"
       - "traefik.http.routers.adserver.entrypoints=websecure"
       - "traefik.http.routers.adserver.tls.certresolver=production"
-      - "traefik.http.services.adserver.loadbalancer.server.port=8080"
+      - "traefik.http.services.adserver.loadbalancer.server.port=9090"
       - "traefik.http.routers.adserver.rule=Host(`adserver.lontra.tech`)"
 
   eventserver:
@@ -67,7 +67,7 @@ services:
       - "traefik.http.routers.eventserver.tls=true"
       - "traefik.http.routers.eventserver.entrypoints=websecure"
       - "traefik.http.routers.eventserver.tls.certresolver=production"
-      - "traefik.http.services.eventserver.loadbalancer.server.port=8080"
+      - "traefik.http.services.eventserver.loadbalancer.server.port=8081"
       - "traefik.http.routers.eventserver.rule=Host(`eventserver.lontra.tech`)"
 
   panel:
@@ -101,7 +101,7 @@ services:
       - "traefik.http.routers.publisher.tls=true"
       - "traefik.http.routers.publisher.entrypoints=websecure"
       - "traefik.http.routers.publisher.tls.certresolver=production"
-      - "traefik.http.services.publisher.loadbalancer.server.port=8081"
+      - "traefik.http.services.publisher.loadbalancer.server.port=8089"
       - "traefik.http.routers.publisher.rule=Host(`publisher.lontra.tech`)"
 
   pgadmin:

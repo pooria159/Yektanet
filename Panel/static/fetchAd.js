@@ -9,9 +9,9 @@
                 if (data && data.length > 0) {
                     const ad = data[0];
                     const adContent = '&lt;div class="ad-container"&gt;' +
-                                    '&lt;img src="' + ad.imageUrl + '" alt="' + ad.title + '"&gt;' +
-                                    '&lt;p&gt;' + ad.title + '&lt;/p&gt;' +
-                                    '&lt;a href="' + ad.clickUrl + '" target="_blank"&gt;Click here&lt;/a&gt;' +
+                                    '&lt;img src="' + ad.ImagePath + '" alt="' + ad.Title + '"&gt;' +
+                                    '&lt;p&gt;' + ad.Title + '&lt;/p&gt;' +
+                                    '&lt;a href="' + ad.ClickLink + '" target="_blank"&gt;Click here&lt;/a&gt;' +
                                     '&lt;/div&gt;';
                     adContainer.innerHTML = adContent;
                     fetch(ad.impressionUrl);

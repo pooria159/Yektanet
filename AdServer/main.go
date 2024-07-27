@@ -22,8 +22,8 @@ var TEST_RAW_RESPONSE = []byte(`[{"Id":1,"Title":"12","ImagePath":"uploads\\tree
 const ADSERVER_PORT = 9090	// The port on which AdServer listens.
 const FETCH_PERIOD = 60	// How many seconds to wait between fetching
 						// Ads from Panel.
-const FETCH_URL = "http://localhost:8080/api/v1/ads/active/"	// Address from which ads are to be fetched.
-const EVENT_URL = "http://localhost:7070/"						// Address to which ads are to be sent.
+const FETCH_URL = "http://panel.lontra.tech/api/v1/ads/active/"	// Address from which ads are to be fetched.
+const EVENT_URL = "http://eventserver.lontra.tech/"						// Address to which ads are to be sent.
 const API_TEMPLATE = "/api/ads/"									// URL that will be routed to the getNewAd handler.
 const PUBLISHER_ID_RECV_PARAM 	= "publisherID"						// Name of the parameter in URL received from publisher that specifies publisher's id.
 
