@@ -26,7 +26,7 @@ func main() {
         publisher := c.Param("publisher")
         text, exists := publisherData[publisher]
         if !exists {
-            c.HTML(http.StatusNotFound, "notfound.html",gin.H{"error": "Publisher not found"})
+            c.JSON(http.StatusNotFound, gin.H{"error": "Publisher not found"})
             return
         }
         c.HTML(http.StatusOK, publisher+".html", gin.H{

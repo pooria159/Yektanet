@@ -101,7 +101,7 @@ services:
       - "traefik.http.routers.publisher.tls=true"
       - "traefik.http.routers.publisher.entrypoints=websecure"
       - "traefik.http.routers.publisher.tls.certresolver=production"
-      - "traefik.http.services.publisher.loadbalancer.server.port=8080"
+      - "traefik.http.services.publisher.loadbalancer.server.port=8081"
       - "traefik.http.routers.publisher.rule=Host(`publisher.lontra.tech`)"
 
   pgadmin:
