@@ -19,7 +19,15 @@ func ConnectWithLogger() {
 		log.Fatal("Error loading .env file")
 	}
 
-	dsn := os.Getenv("DSN")
+	host := os.Getenv("HOST")
+	port := os.Getenv("DBPORT")
+	user := os.Getenv("USER")
+	password := os.Getenv("PASSWORD")
+	dbname := os.Getenv("DBNAME")
+
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 		logger.Config{
@@ -76,6 +84,12 @@ func CreateDB() {
 	user := os.Getenv("USER")
 	password := os.Getenv("PASSWORD")
 	dbname := os.Getenv("DBNAME")
+
+	fmt.Println(host)
+	fmt.Println(port)
+	fmt.Println(user)
+	fmt.Println(password)
+	fmt.Println(dbname)
 
 	dsnWithoutDB := fmt.Sprintf("host=%s port=%s user=%s password=%s sslmode=disable",
 		host, port, user, password)
