@@ -20,10 +20,10 @@ import (
 var TEST_RAW_RESPONSE = []byte(`[{"Id":1,"Title":"12","ImagePath":"uploads\\treesample.png","BidValue":12,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}},{"Id":6,"Title":"144","ImagePath":"media\\treesample.png","BidValue":144,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}},{"Id":11,"Title":"test","ImagePath":"media/swoled_20240722144230_2.jpg","BidValue":12,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}},{"Id":10,"Title":"first","ImagePath":"media/s.jpg","BidValue":100,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}}]`)
 
 const ADSERVER_PORT = 9090	// The port on which AdServer listens.
-const FETCH_PERIOD = 60	// How many seconds to wait between fetching
-						// Ads from Panel.
-const FETCH_URL = "http://localhost:8080/api/v1/ads/active/"	// Address from which ads are to be fetched.
-const EVENT_URL = "http://localhost:7070/"						// Address to which ads are to be sent.
+const FETCH_PERIOD = 60		// How many seconds to wait between fetching
+							// Ads from Panel.
+const FETCH_URL = "http://localhost:8080/api/v1/ads/active/"		// Address from which ads are to be fetched.
+const EVENT_URL = "http://localhost:7070/"							// Address to which ads are to be sent.
 const API_TEMPLATE = "/api/ads/"									// URL that will be routed to the getNewAd handler.
 const PUBLISHER_ID_RECV_PARAM 	= "publisherID"						// Name of the parameter in URL received from publisher that specifies publisher's id.
 
@@ -34,6 +34,7 @@ var JWT_ENCRYPTION_KEY = []byte("Golangers:Pooria-Mohammad-Roya-Sina")	// Encryp
 
 /* User-defined Types and Structs */
 
+/* Holds the information contained in fetched ads from Panel. */
 type FetchedAd struct {
 	Id           int    `json:"Id"`
 	Title        string `json:"Title"`
@@ -42,6 +43,7 @@ type FetchedAd struct {
 	RedirectLink string `json:"RedirectLink"`
 }
 
+/* This struct will be signed by AdServer and eventually sent to Event Server. */
 type EventInfo struct {
 	UserID		string
 	PublisherID string
@@ -52,6 +54,7 @@ type EventInfo struct {
 	jwt.StandardClaims
 }
 
+/* This information gets serialized to JSON and will be sent to Publisher. */
 type ResponseInfo struct {
 	Title			string 	`json:"Title"`
 	ImagePath		string	`json:"ImagePath"`
@@ -67,8 +70,8 @@ var allFetchedAds []FetchedAd		// A slice containing all ads.
 /* Functions of the Server */
 
 /* Issues a request to Panel and obtains all available
-   ads as the response. Returns the first encountered
-   error, if any. */
+ ads as the response. Returns the first encountered
+ error, if any. */
 func fetchAdsOnce() error {
 	client := http.DefaultClient
 	req, err := http.NewRequest("GET", FETCH_URL, nil)
@@ -110,9 +113,9 @@ func fetchAdsOnce() error {
 }
 
 /* In an infinite loop, calls fetchAdsOnce and
-   checks if any error has occured. If so, logs the error
-   and waits for half of normal waiting interval. If not,
-   waits for `FETCH_PERIOD` seconds. */
+ checks if any error has occured. If so, logs the error
+ and waits for half of normal waiting interval. If not,
+ waits for `FETCH_PERIOD` seconds. */
 func periodicallyFetchAds() {
 	var err error
 	for {
@@ -126,6 +129,8 @@ func periodicallyFetchAds() {
 	}
 }
 
+/* Selects best ads based on AdServer's policy.
+ Current policy: to select ad with highest bid. */
 func selectAd() FetchedAd {
 	var bestAd FetchedAd
 	var maxBid int = 0
@@ -178,12 +183,12 @@ func generateSignedEventInfo(action string, selectedAd FetchedAd, requestingPubl
 }
 
 /* Makes a Response instance, puts info that is to be sent 
-   in it and returns it. */
+ in it and returns it. */
 func makeResopnse(selectedAd FetchedAd, requestingPublisherId int) (ResponseInfo, error) {
 	var response ResponseInfo
 	var err error
 	/* Hard-code the redirect link because Panel still does not
-	 * return a valid one.*/
+	 return a valid one.*/
 	selectedAd.RedirectLink 		= `www.google.com`
 
 	response.Title					= selectedAd.Title
@@ -212,7 +217,7 @@ func signEvent(event *EventInfo) (string, error) {
 }
 
 /* Handels GET requests from publishers requesting
-   for a new ad. */
+ for a new ad. */
 func getNewAd(c *gin.Context) {
 	selectedAd := selectAd()
 	publisherId, _ := strconv.Atoi(c.Query(PUBLISHER_ID_RECV_PARAM))
