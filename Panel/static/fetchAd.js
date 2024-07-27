@@ -1,24 +1,65 @@
-(function() {
-    const publisherID = new URLSearchParams(window.location.search).get('publisherID');
-    const adContainer = document.getElementById('ad-container');
-    
-    function fetchAd() {
-        fetch(`http://adserver.lontra.tech/api/ads?publisherID=${publisherID}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data && data.length > 0) {
-                    const ad = data[0];
-                    const adContent = '&lt;div class="ad-container"&gt;' +
-                                    '&lt;img src="' + ad.ImagePath + '" alt="' + ad.Title + '"&gt;' +
-                                    '&lt;p&gt;' + ad.Title + '&lt;/p&gt;' +
-                                    '&lt;a href="' + ad.ClickLink + '" target="_blank"&gt;Click here&lt;/a&gt;' +
-                                    '&lt;/div&gt;';
-                    adContainer.innerHTML = adContent;
-                    fetch(ad.impressionUrl);
-                }
+(function () {
+  const publisherID = document.currentScript.getAttribute('id');
+  const adContainer = document.getElementById('adBox');
+  if (!adContainer) {
+    console.error('Ad container element not found.');
+    return;
+  }
+  function fetchAd() {
+    fetch(`https://adserver.lontra.tech/api/ads?publisherID=${publisherID}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          const ad = data[0];
+          const adContent = `
+                <img src="${ad.ImagePath}" alt="${ad.Title}" style="width:100%;" />
+                <h3>${ad.Title}</h3>
+                <a href="${ad.ClickLink}" target="_blank" class="click-here">Click here</a>
+              `;
+          adContainer.innerHTML = adContent;
+          const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+              fetch(ad.impressionLink);
+              observer.disconnect();
+            }
+          }, { threshold: 1.0 });
+          observer.observe(adContainer);
+          document.querySelector('.click-here').addEventListener('click', function (event) {
+            event.preventDefault();
+            fetch(ad.ClickLink, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ ad: ad.Title, clickedAt: new Date().toISOString() })
             })
-            .catch(error => console.error('Error fetching ad:', error));
+              .then(response => response.json())
+              .then(data => {
+                console.log('Click recorded:', data);
+                window.open(ad.ClickLink, '_blank');
+              })
+              .catch(error => {
+                console.error('Error recording click:', error);
+              });
+          });
+        } else {
+          adContainer.innerHTML = '<div class="ad-content">No ad available</div>';
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching ad:', error);
+        adContainer.innerHTML = '<div class="ad-content">Error loading ad</div>';
+      });
+  }
+  function placeAd() {
+    const paragraphs = document.getElementsByTagName('p');
+    if (paragraphs.length > 0) {
+      const lastParagraph = paragraphs[paragraphs.length - 1];
+      lastParagraph.parentNode.insertBefore(adContainer, lastParagraph.nextSibling);
+    } else {
+      document.body.appendChild(adContainer);
     }
-    
-    fetchAd();
+  }
+  fetchAd();
+  placeAd();
 })();
