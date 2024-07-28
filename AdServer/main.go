@@ -243,8 +243,9 @@ func main() {
 	   and query-responser. */
 	go periodicallyFetchAds()
 	router := gin.Default()
-	router.Use(cors.Default())
-
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	router.Use(cors.New(config))
 	router.GET(API_TEMPLATE, getNewAd)
 
 	router.Run(":" + strconv.Itoa(ADSERVER_PORT))
