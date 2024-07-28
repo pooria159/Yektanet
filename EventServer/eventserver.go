@@ -75,8 +75,6 @@ func (s *EventServer) handleImpression(c *gin.Context) {
 		//		s.callAPI(event)
 		if err := s.callAPI(event); err != nil {
 			log.Printf("Failed to call API for impression event: %v\n", err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": "failed to call API"})
-			return
 		}
 	}
 
