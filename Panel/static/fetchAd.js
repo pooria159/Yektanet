@@ -10,7 +10,6 @@
       .then(response => response.json())
       .then(data => {
         console.log("Received data:", JSON.stringify(data, null, 2));
-        data =  JSON.stringify(data, null, 2);
         if (data) {
           const ad = data;
           const adContent = `
