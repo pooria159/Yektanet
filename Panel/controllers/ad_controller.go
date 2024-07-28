@@ -172,7 +172,6 @@ func (ctrl AdController) HandleEventAtomic(c *gin.Context) {
 	err = ctrl.Repo.WithTransaction(func(tx *gorm.DB) error {
 		ad, err := ctrl.Repo.FindByIDTx(tx, id)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "ad not found"})
 			return err
 		}
 		advertiser_id := ad.AdvertiserID
@@ -184,20 +183,15 @@ func (ctrl AdController) HandleEventAtomic(c *gin.Context) {
 
 		advertiser, err := ctrl.RepoAdvertiser.FindByIDTx(tx, int(uint(advertiser_id)))
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "advertiser not found"})
-
 			return err
-
 		}
-		publisher_id, err := strconv.Atoi(c.Param("id"))
+		publisher_id, err := strconv.Atoi(eventRequest.PublisherID)
 		if err != nil {
 			return err
 		}
 
 		publisher, err := ctrl.RepoPublisher.FindByIDTx(tx, publisher_id)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "publisher not found"})
-
 			return err
 		}
 
@@ -222,7 +216,7 @@ func (ctrl AdController) HandleEventAtomic(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process event"})
 		fmt.Println(err.Error())
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": "Event successfully processed"})
