@@ -75,6 +75,8 @@ func (s *EventServer) handleImpression(c *gin.Context) {
 		//		s.callAPI(event)
 		if err := s.callAPI(event); err != nil {
 			log.Printf("Failed to call API for impression event: %v\n", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "failed to call API"})
+			return
 		}
 	}
 
@@ -122,7 +124,7 @@ func (s *EventServer) handleClick(c *gin.Context) {
 
 // callInternalAPI simulates calling an internal API to handle the click
 func (s *EventServer) callAPI(event Event) error {
-	url := fmt.Sprintf("http://panel.lontra.tech/api/v1/ads/%s/event", event.AdID)
+	url := fmt.Sprintf("https://panel.lontra.tech/api/v1/ads/%s/event", event.AdID)
 	payload := map[string]interface{}{
 		"publisher_id": event.PublisherID,
 		"event_type":   event.EventType,

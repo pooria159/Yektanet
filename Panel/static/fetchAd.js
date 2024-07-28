@@ -21,7 +21,12 @@
           adContainer.innerHTML = adContent;
           const observer = new IntersectionObserver((entries) => {
             if (entries[0].isIntersecting) {
-              fetch(ad.ImpressionLink);
+              fetch(ad.ImpressionLink,{
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+              });
               observer.disconnect();
             }
           }, { threshold: 1.0 });
