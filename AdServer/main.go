@@ -74,7 +74,7 @@ ads as the response. Returns the first encountered
 error, if any.
 */
 func fetchAdsOnce() error {
-	/*client := http.DefaultClient
+	client := http.DefaultClient
 	req, err := http.NewRequest("GET", FETCH_URL, nil)
 	if err != nil {
 		log.Println("error in making request")
@@ -94,12 +94,12 @@ func fetchAdsOnce() error {
 	if err != nil {
 		log.Println("error in reading response body:")
 		return err
-	}*/
+	}
 
 	// You can comment the next line and uncomment its following line
 	// in order to mock the response of Panel.
-	//err = json.Unmarshal(responseByte, &allFetchedAds)
-	err := json.Unmarshal(TEST_RAW_RESPONSE, &allFetchedAds)
+	err = json.Unmarshal(responseByte, &allFetchedAds)
+	//err := json.Unmarshal(TEST_RAW_RESPONSE, &allFetchedAds)
 	if err != nil {
 		log.Println("error in parsing response:")
 		return err
@@ -191,9 +191,6 @@ func generateSignedEventInfo(action string, selectedAd FetchedAd, requestingPubl
 func makeResopnse(selectedAd FetchedAd, requestingPublisherId int) (ResponseInfo, error) {
 	var response ResponseInfo
 	var err error
-	/* Hard-code the redirect link because Panel still does not
-	 return a valid one.*/
-	selectedAd.RedirectLink 		= `www.google.com`
 
 	response.Title					= selectedAd.Title
 	response.ImagePath				= selectedAd.ImageSource
