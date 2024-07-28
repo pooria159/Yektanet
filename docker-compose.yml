@@ -79,6 +79,8 @@ services:
       - db
     networks:
       - traefik
+    volumes:
+    - ./Panel/media:/app/media
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.panel.tls=true"
