@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/gin-contrib/cors"
 	"io"
 	"log"
 	"math/rand"
@@ -242,6 +243,8 @@ func main() {
 	   and query-responser. */
 	go periodicallyFetchAds()
 	router := gin.Default()
+	router.Use(cors.Default())
+
 	router.GET(API_TEMPLATE, getNewAd)
 
 	router.Run(":" + strconv.Itoa(ADSERVER_PORT))
