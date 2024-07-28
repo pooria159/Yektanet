@@ -43,6 +43,7 @@ func (ctrl AdController) CreateAd(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid bid value"})
 		return
 	}
+	redirect_link := c.PostForm("redirect_link")
 
 	// Handle file upload
 	file, err := c.FormFile("image")
@@ -75,6 +76,7 @@ func (ctrl AdController) CreateAd(c *gin.Context) {
 		BidValue:     bid,
 		IsActive:     true,
 		AdvertiserID: id,
+		RedirectLink: redirect_link,
 	}
 
 	if err := ctrl.Repo.Save(ad); err != nil {
