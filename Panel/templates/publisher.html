@@ -9,6 +9,10 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/themes/prism.min.css"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+    />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <style>
@@ -16,7 +20,7 @@
         font-family: Arial, sans-serif;
         justify-content: center;
         align-items: center;
-        background-image: url('/static/image_back.jpg');
+        background-image: url("/static/image_back.jpg");
         background-size: cover;
         background-position: center;
       }
@@ -164,7 +168,9 @@
       <section class="code-container">
         <div class="code-box">
           <button class="copy-button" onclick="copyCode()">Copy</button>
-          <pre id="code"><code class="language-html">&lt;script src="https://panel.lontra.tech/static/fetchAd.js" id="{{.publisher.ID}}"&gt;&lt;/script&gt;</code></pre>
+          <pre
+            id="code"
+          ><code class="language-html">&lt;script src="https://panel.lontra.tech/static/fetchAd.js" id="{{.publisher.ID}}"&gt;&lt;/script&gt;</code></pre>
         </div>
       </section>
       <section class="chart-container">
@@ -174,7 +180,22 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-markup.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var errorMessage = "{{.error}}";
+        if (errorMessage) {
+          Toastify({
+            text: errorMessage,
+            duration: 3000,
+            close: true,
+            gravity: "top", 
+            position: "right", 
+            backgroundColor: "#FF0000",
+            stopOnFocus: true,
+          }).showToast();
+        }
+      });
       function copyCode() {
         const codeElement = document.getElementById("code").innerText;
         const textarea = document.createElement("textarea");
@@ -190,48 +211,48 @@
         document.getElementById("amount").value = value;
       }
 
-      document.addEventListener('DOMContentLoaded', function () {
-        const ctx = document.getElementById('myChart').getContext('2d');
+      document.addEventListener("DOMContentLoaded", function () {
+        const ctx = document.getElementById("myChart").getContext("2d");
         const myChart = new Chart(ctx, {
-          type: 'line',
+          type: "line",
           data: {
             datasets: [
               {
-                label: 'Revenue',
+                label: "Revenue",
                 data: [
-                  { x: '2024-07-01', y: 200 },
-                  { x: '2024-07-02', y: 250 },
-                  { x: '2024-07-03', y: 300 },
-                  { x: '2024-07-04', y: 400 },
+                  { x: "2024-07-01", y: 200 },
+                  { x: "2024-07-02", y: 250 },
+                  { x: "2024-07-03", y: 300 },
+                  { x: "2024-07-04", y: 400 },
                 ],
-                backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: "rgba(255, 99, 132, 0.5)",
+                borderColor: "rgba(255, 99, 132, 1)",
                 borderWidth: 2,
                 pointRadius: 8,
               },
               {
-                label: 'Impressions',
+                label: "Impressions",
                 data: [
-                  { x: '2024-07-01', y: 1500 },
-                  { x: '2024-07-02', y: 1800 },
-                  { x: '2024-07-03', y: 2200 },
-                  { x: '2024-07-04', y: 1000 },
+                  { x: "2024-07-01", y: 1500 },
+                  { x: "2024-07-02", y: 1800 },
+                  { x: "2024-07-03", y: 2200 },
+                  { x: "2024-07-04", y: 1000 },
                 ],
-                backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: "rgba(54, 162, 235, 0.5)",
+                borderColor: "rgba(54, 162, 235, 1)",
                 borderWidth: 2,
                 pointRadius: 8,
               },
               {
-                label: 'Clicks',
+                label: "Clicks",
                 data: [
-                  { x: '2024-07-01', y: 120 },
-                  { x: '2024-07-02', y: 140 },
-                  { x: '2024-07-03', y: 160 },
-                  { x: '2024-07-04', y: 200 },
+                  { x: "2024-07-01", y: 120 },
+                  { x: "2024-07-02", y: 140 },
+                  { x: "2024-07-03", y: 160 },
+                  { x: "2024-07-04", y: 200 },
                 ],
-                backgroundColor: 'rgba(75, 192, 192, 0.5)',
-                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: "rgba(75, 192, 192, 0.5)",
+                borderColor: "rgba(75, 192, 192, 1)",
                 borderWidth: 2,
                 pointRadius: 8,
               },
@@ -240,19 +261,19 @@
           options: {
             scales: {
               x: {
-                type: 'time',
+                type: "time",
                 time: {
-                  unit: 'day',
+                  unit: "day",
                 },
                 title: {
                   display: true,
-                  text: 'Date',
+                  text: "Date",
                 },
               },
               y: {
                 title: {
                   display: true,
-                  text: 'Value',
+                  text: "Value",
                 },
               },
             },
