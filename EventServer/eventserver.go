@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/gin-contrib/cors"
 	"log"
 	"net/http"
 
