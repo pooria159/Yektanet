@@ -216,7 +216,7 @@ func (ctrl AdController) HandleEventAtomic(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process event"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		fmt.Println(err.Error())
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": "Event successfully processed"})
