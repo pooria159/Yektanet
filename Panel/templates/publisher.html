@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Publisher Panel</title>
@@ -132,51 +132,67 @@
         width: 100%;
         max-width: 800px;
       }
+      
+      .error-message {
+        background-color: #ffcccc;
+        border: 1px solid #ff6666;
+        color: #cc0000;
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 10px;
+        width: 100%;
+        text-align: center;
+      }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div class="container">
-      <header>
-        <h1>Publisher Panel</h1>
-      </header>
-      <div class="content">
-        <section class="info-container">
-          <h2>Publisher Information</h2>
-          <p><strong>Name:</strong> {{.publisher.Name}}</p>
-          <p>
-            <strong>Website:</strong>
-            <a href="{{.publisher.Website}}">{{.publisher.Website}}</a>
-          </p>
-          <p><strong>Credit:</strong> ${{.publisher.Credit}}</p>
-        </section>
-        <section class="withdraw-container">
-          <h2>Withdraw</h2>
-          <form action="/publisher/{{.publisher.ID}}/withdraw" method="post">
-            <label for="amount">Amount:</label>
-            <input type="text" id="amount" name="amount" required />
-            <div class="amount-options">
-              <button type="button" onclick="setAmount(10)">10</button>
-              <button type="button" onclick="setAmount(100)">100</button>
-              <button type="button" onclick="setAmount(200)">200</button>
-              <button type="button" onclick="setAmount(500)">500</button>
-              <button type="button" onclick="setAmount(1000)">1000</button>
-            </div>
-            <button type="submit" class="withdraw-button">Withdraw</button>
-          </form>
-        </section>
-      </div>
-      <section class="code-container">
-        <div class="code-box">
-          <button class="copy-button" onclick="copyCode()">Copy</button>
-          <pre
-            id="code"
-          ><code class="language-html">&lt;script src="https://panel.lontra.tech/static/fetchAd.js" id="{{.publisher.ID}}"&gt;&lt;/script&gt;</code></pre>
+        <header>
+            <h1>Publisher Panel</h1>
+        </header>
+        {{ if .error }}
+        <div class="error-message">
+            <p>{{ .error }}</p>
         </div>
-      </section>
-      <section class="chart-container">
-        <h2>Reports Over Time</h2>
-        <canvas id="myChart" width="400" height="200"></canvas>
-      </section>
+        {{ end }}
+        <div class="content">
+            <section class="info-container">
+                <h2>Publisher Information</h2>
+                <p><strong>Name:</strong> {{.publisher.Name}}</p>
+                <p>
+                    <strong>Website:</strong>
+                    <a href="{{.publisher.Website}}">{{.publisher.Website}}</a>
+                </p>
+                <p><strong>Credit:</strong> ${{.publisher.Credit}}</p>
+            </section>
+            <section class="withdraw-container">
+                <h2>Withdraw</h2>
+                <form action="/publishers/{{.publisher.ID}}/withdraw" method="post">
+                    <label for="amount">Amount:</label>
+                    <input type="text" id="amount" name="amount" required />
+                    <div class="amount-options">
+                        <button type="button" onclick="setAmount(10)">10</button>
+                        <button type="button" onclick="setAmount(100)">100</button>
+                        <button type="button" onclick="setAmount(200)">200</button>
+                        <button type="button" onclick="setAmount(500)">500</button>
+                        <button type="button" onclick="setAmount(1000)">1000</button>
+                    </div>
+                    <button type="submit" class="withdraw-button">Withdraw</button>
+                </form>
+            </section>
+        </div>
+        <section class="code-container">
+            <div class="code-box">
+                <button class="copy-button" onclick="copyCode()">Copy</button>
+                <pre id="code">
+<code class="language-html">&lt;script src="https://panel.lontra.tech/static/fetchAd.js" id="{{.publisher.ID}}"&gt;&lt;/script&gt;</code>
+                </pre>
+            </div>
+        </section>
+        <section class="chart-container">
+            <h2>Reports Over Time</h2>
+            <canvas id="myChart" width="400" height="200"></canvas>
+        </section>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-markup.min.js"></script>
@@ -196,6 +212,7 @@
           }).showToast();
         }
       });
+      
       function copyCode() {
         const codeElement = document.getElementById("code").innerText;
         const textarea = document.createElement("textarea");
@@ -246,10 +263,10 @@
               {
                 label: "Clicks",
                 data: [
-                  { x: "2024-07-01", y: 120 },
-                  { x: "2024-07-02", y: 140 },
-                  { x: "2024-07-03", y: 160 },
-                  { x: "2024-07-04", y: 200 },
+                  { x: "2024-07-01", y: 75 },
+                  { x: "2024-07-02", y: 50 },
+                  { x: "2024-07-03", y: 60 },
+                  { x: "2024-07-04", y: 30 },
                 ],
                 backgroundColor: "rgba(75, 192, 192, 0.5)",
                 borderColor: "rgba(75, 192, 192, 1)",
@@ -281,5 +298,5 @@
         });
       });
     </script>
-  </body>
+</body>
 </html>

@@ -36,34 +36,38 @@ func (ctrl PublisherController) PublisherPanel(c *gin.Context) {
 // IS Okey
 func (ctrl PublisherController) PublisherWithdraw(c *gin.Context) {
     id, err := strconv.Atoi(c.Param("id"))
-	if err != nil || id <= 0 {
-		c.HTML(http.StatusBadRequest, "publisher.html" , gin.H{"error": "Invalid ID"})
-		return
-	}
-	publisher, err := ctrl.Repo.FindByID(uint(id))
-    if err != nil || publisher.ID == 0 {
-        c.HTML(http.StatusNotFound, "publisher.html" , gin.H{"error": "Publisher not found"})
+    if err != nil || id <= 0 {
+        c.HTML(http.StatusBadRequest, "publisher.html", gin.H{"error": "Invalid ID"})
         return
     }
-	amountStr := c.PostForm("amount")
-	amount, err := strconv.ParseFloat(amountStr, 64)
-	if err != nil  || amount <= 0 {
-		c.HTML(http.StatusBadRequest, "publisher.html" , gin.H{"error": "Invalid amount"})
-		return
-	}
-	if publisher.Credit >= int(amount) {
+    publisher, err := ctrl.Repo.FindByID(uint(id))
+    if err != nil || publisher.ID == 0 {
+        c.HTML(http.StatusNotFound, "publisher.html", gin.H{"error": "Publisher not found"})
+        return
+    }
+    
+    amountStr := c.PostForm("amount")
+    amount, err := strconv.ParseFloat(amountStr, 64)
+    if err != nil || amount <= 0 {
+        c.HTML(http.StatusBadRequest, "publisher.html", gin.H{"publisher": publisher, "error": "Invalid amount"})
+        return
+    }
+
+    if publisher.Credit >= int(amount) {
         publisher.Credit -= int(amount)
         err := ctrl.Repo.Update(&publisher)
-		if err != nil {
-			c.HTML(http.StatusInternalServerError, "publisher.html" , gin.H{"error": "Internal server error"})
-			return
-		}
+        if err != nil {
+            c.HTML(http.StatusInternalServerError, "publisher.html", gin.H{"publisher": publisher, "error": "Internal server error"})
+            return
+        }
     } else {
-        c.HTML(http.StatusBadRequest, "publisher.html" , gin.H{"error": "Insufficient balance"})
+        c.HTML(http.StatusBadRequest, "publisher.html", gin.H{"publisher": publisher, "error": "Insufficient balance"})
         return
     }
+    
     c.Redirect(http.StatusSeeOther, fmt.Sprintf("/publishers/%d", id))
 }
+
 
 
 // IS Okey
