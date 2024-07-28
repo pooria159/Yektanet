@@ -21,13 +21,13 @@ type PublisherController struct {
 // Is Okey
 func (ctrl PublisherController) PublisherPanel(c *gin.Context) {
     id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+	if err != nil || id <= 0 {
+		c.HTML(http.StatusBadRequest, "publisher.html" ,gin.H{"error": "Invalid ID"})
 		return
 	}
 	publisher, err := ctrl.Repo.FindByID(uint(id))
-    if err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": "Publisher not found"})
+    if err != nil || publisher.ID == 0{
+        c.HTML(http.StatusNotFound, "publisher.html" , gin.H{"error": "Publisher not found"})
         return
     }
     c.HTML(http.StatusOK, "publisher.html", gin.H{"publisher": publisher})
@@ -36,29 +36,32 @@ func (ctrl PublisherController) PublisherPanel(c *gin.Context) {
 // IS Okey
 func (ctrl PublisherController) PublisherWithdraw(c *gin.Context) {
     id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+	if err != nil || id <= 0 {
+		c.HTML(http.StatusBadRequest, "publisher.html" , gin.H{"error": "Invalid ID"})
 		return
 	}
 	publisher, err := ctrl.Repo.FindByID(uint(id))
-    if err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": "Publisher not found"})
+    if err != nil || publisher.ID == 0 {
+        c.HTML(http.StatusNotFound, "publisher.html" , gin.H{"error": "Publisher not found"})
         return
     }
 	amountStr := c.PostForm("amount")
 	amount, err := strconv.ParseFloat(amountStr, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest,  gin.H{"error": "Invalid amount"})
+	if err != nil  || amount <= 0 {
+		c.HTML(http.StatusBadRequest, "publisher.html" , gin.H{"error": "Invalid amount"})
 		return
 	}
 	if publisher.Credit >= int(amount) {
         publisher.Credit -= int(amount)
-        ctrl.Repo.Update(&publisher)
+        err := ctrl.Repo.Update(&publisher)
+		if err != nil {
+			c.HTML(http.StatusInternalServerError, "publisher.html" , gin.H{"error": "Internal server error"})
+			return
+		}
     } else {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "Insufficient balance"})
+        c.HTML(http.StatusBadRequest, "publisher.html" , gin.H{"error": "Insufficient balance"})
         return
     }
-	fmt.Println(id)
     c.Redirect(http.StatusSeeOther, fmt.Sprintf("/publishers/%d", id))
 }
 
