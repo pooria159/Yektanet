@@ -13,7 +13,7 @@
         if (data) {
           const ad = data;
           const adContent = `
-                <img src="${ad.ImagePath}" alt="${ad.Title}" style="width:100%;" />
+                <img src="https://panel.lontra.tech/${ad.ImagePath}" alt="${ad.Title}" style="width:100%;" />
                 <h3>${ad.Title}</h3>
                 <a ${ad.ClickLink} target="_blank" class="click-here">Click here</a>
               `;
