@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
-	"io"
+	/*"errors"
+	"io"*/
 	"log"
 	"math/rand"
 	"net/http"
@@ -11,9 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gin-contrib/cors"
-
-	"github.com/dgrijalva/jwt-go"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
@@ -22,9 +19,9 @@ import (
 
 var TEST_RAW_RESPONSE = []byte(`[{"Id":1,"Title":"12","ImagePath":"uploads\\treesample.png","BidValue":12,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}},{"Id":6,"Title":"144","ImagePath":"media\\treesample.png","BidValue":144,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}},{"Id":11,"Title":"test","ImagePath":"media/swoled_20240722144230_2.jpg","BidValue":12,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}},{"Id":10,"Title":"first","ImagePath":"media/s.jpg","BidValue":100,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}}]`)
 
-const ADSERVER_PORT = 9090 // The port on which AdServer listens.
-const FETCH_PERIOD = 60    // How many seconds to wait between fetching
-// Ads from Panel.
+const ADSERVER_PORT = 9090	// The port on which AdServer listens.
+const FETCH_PERIOD = 60    	// How many seconds to wait between fetching
+							// Ads from Panel.
 const FETCH_URL = "https://panel.lontra.tech/api/v1/ads/active/" // Address from which ads are to be fetched.
 const EVENT_URL = "https://eventserver.lontra.tech/"             // Address to which ads are to be sent.
 const API_TEMPLATE = "/api/ads/"                                 // URL that will be routed to the getNewAd handler.
@@ -77,7 +74,7 @@ ads as the response. Returns the first encountered
 error, if any.
 */
 func fetchAdsOnce() error {
-	client := http.DefaultClient
+	/*client := http.DefaultClient
 	req, err := http.NewRequest("GET", FETCH_URL, nil)
 	if err != nil {
 		log.Println("error in making request")
@@ -97,12 +94,12 @@ func fetchAdsOnce() error {
 	if err != nil {
 		log.Println("error in reading response body:")
 		return err
-	}
+	}*/
 
 	// You can comment the next line and uncomment its following line
 	// in order to mock the response of Panel.
-	err = json.Unmarshal(responseByte, &allFetchedAds)
-	//err := json.Unmarshal(TEST_RAW_RESPONSE, &allFetchedAds)
+	//err = json.Unmarshal(responseByte, &allFetchedAds)
+	err := json.Unmarshal(TEST_RAW_RESPONSE, &allFetchedAds)
 	if err != nil {
 		log.Println("error in parsing response:")
 		return err
@@ -152,20 +149,14 @@ func selectAd() FetchedAd {
 	return bestAd
 }
 
-/*
-Returns a uniformly random int
-
-	in the interval [a, b).
-*/
+/* Returns a uniformly random int
+ in the interval [a, b). */
 func randomInRange(a, b int) int {
 	return a + rand.Intn(b-a)
 }
 
-/*
-Generate a random token of given size.
-
-	ASCII code of each character is between 'a' and 'z' (inclusive).
-*/
+/* Generate a random token of given size.
+ ASCII code of each character is between 'a' and 'z' (inclusive). */
 func generateRandomToken(size int) string {
 	var builder strings.Builder
 	builder.Reset()
@@ -252,9 +243,6 @@ func main() {
 	   and query-responser. */
 	go periodicallyFetchAds()
 	router := gin.Default()
-	config := cors.DefaultConfig()
-	config.AllowAllOrigins = true
-	router.Use(cors.New(config))
 	router.GET(API_TEMPLATE, getNewAd)
 
 	router.Run(":" + strconv.Itoa(ADSERVER_PORT))
