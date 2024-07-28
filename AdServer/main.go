@@ -187,6 +187,8 @@ func generateEventServerLink(action string, selectedAd FetchedAd, requestingPubl
 	builder.WriteString("&" + AD_ID_SEND_PARAM + "=")
 	builder.WriteString(strconv.Itoa(selectedAd.Id))
 	builder.WriteString("&" + AD_URL_SEND_PARAM + "=")
+	// TODO: Remove the hard-coded redirect link
+	selectedAd.RedirectLink = "google.com"
 	builder.WriteString(selectedAd.RedirectLink)
 	return builder.String()
 }
