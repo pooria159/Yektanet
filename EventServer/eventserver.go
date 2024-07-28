@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/gin-contrib/cors"
 	"log"
 	"net/http"
 
@@ -166,7 +165,6 @@ func (s *EventServer) SetupRouter() *gin.Engine {
 func main() {
 	server := NewEventServer()
 	router := server.SetupRouter()
-	router.Use(cors.Default())
 
 	// Start processing events
 	go server.processEvents()
