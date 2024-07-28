@@ -58,11 +58,8 @@ func (s *EventServer) handleImpression(c *gin.Context) {
 	parsedToken, err := jwt.ParseWithClaims(eventInfoToken, &event, func(t *jwt.Token) (interface{}, error) {
 		return JWT_ENCRYPTION_KEY, nil
 	})
-	if err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
-	}
-	if !parsedToken.Valid {
-		c.AbortWithStatus(http.StatusBadRequest)
+	if err != nil || !parsedToken.Valid{
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid impression token"})
 	}
 
 	if _, ok := s.impressions[event.UserID]; !ok {
@@ -90,11 +87,8 @@ func (s *EventServer) handleClick(c *gin.Context) {
 	parsedToken, err := jwt.ParseWithClaims(eventInfoToken, &event, func(t *jwt.Token) (interface{}, error) {
 		return JWT_ENCRYPTION_KEY, nil
 	})
-	if err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
-	}
-	if !parsedToken.Valid {
-		c.AbortWithStatus(http.StatusBadRequest)
+	if err != nil || !parsedToken.Valid{
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid click token"})
 	}
 	
 	if _, ok := s.clicks[event.UserID]; !ok {
