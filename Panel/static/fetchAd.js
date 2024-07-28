@@ -1,8 +1,6 @@
 (function () {
   const publisherID = document.currentScript.getAttribute('id');
-  console.log("Meoooooooooooooo" + publisherID);
   const adContainer = document.getElementById('adBox');
-  console.log("SAGGGGGGGGGGGGG" + adContainer);
   if (!adContainer) {
     console.error('Ad container element not found.');
     return;
@@ -23,7 +21,7 @@
           adContainer.innerHTML = adContent;
           const observer = new IntersectionObserver((entries) => {
             if (entries[0].isIntersecting) {
-              fetch(ad.impressionLink);
+              fetch(ad.ImpressionLink);
               observer.disconnect();
             }
           }, { threshold: 1.0 });
