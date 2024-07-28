@@ -133,16 +133,6 @@
         max-width: 800px;
       }
       
-      .error-message {
-        background-color: #ffcccc;
-        border: 1px solid #ff6666;
-        color: #cc0000;
-        padding: 10px;
-        margin-bottom: 15px;
-        border-radius: 10px;
-        width: 100%;
-        text-align: center;
-      }
     </style>
 </head>
 <body>
@@ -150,11 +140,6 @@
         <header>
             <h1>Publisher Panel</h1>
         </header>
-        {{ if .error }}
-        <div class="error-message">
-            <p>{{ .error }}</p>
-        </div>
-        {{ end }}
         <div class="content">
             <section class="info-container">
                 <h2>Publisher Information</h2>
