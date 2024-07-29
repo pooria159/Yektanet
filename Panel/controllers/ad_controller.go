@@ -39,6 +39,9 @@ func (ctrl AdController) CreateAd(c *gin.Context) {
 
 	title := c.PostForm("title")
 	bid ,_ := strconv.Atoi(c.PostForm("bid"))
+	redirect_link := c.PostForm("redirect_link")
+
+	// Handle file upload
 	file, err := c.FormFile("image")
 	if err != nil {
 		c.HTML(http.StatusBadRequest, "advertiser.html", gin.H{"aderror": "Image Upload Failed"})
@@ -65,6 +68,7 @@ func (ctrl AdController) CreateAd(c *gin.Context) {
 		BidValue:     bid,
 		IsActive:     true,
 		AdvertiserID: id,
+		RedirectLink: redirect_link,
 	}
 	
 	if err := ctrl.Repo.Save(ad); err != nil {
@@ -121,7 +125,7 @@ func (ctrl AdController) HandleEventAtomic(c *gin.Context) {
 		if err != nil {
 			return err
 		}
-		publisher_id, err := strconv.Atoi(c.Param("id"))
+		publisher_id, err := strconv.Atoi(eventRequest.PublisherID)
 		if err != nil {
 			return err
 		}
@@ -152,7 +156,7 @@ func (ctrl AdController) HandleEventAtomic(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process event"})
 		fmt.Println(err.Error())
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": "Event successfully processed"})

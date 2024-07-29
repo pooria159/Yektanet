@@ -116,6 +116,10 @@
               <td><input type="text" id="title" name="title" required /></td>
             </tr>
             <tr>
+              <th><label for="redirect_link">Link:</label></th>
+              <td><input type="text" id="redirect_link" name="redirect_link" required /></td>
+            </tr>
+            <tr>
               <th><label for="image">Image File:</label></th>
               <td><input type="file" id="image" name="image" required /></td>
             </tr>
@@ -136,6 +140,7 @@
             <tr>
               <th>Title</th>
               <th>Image</th>
+              <th>Link</th>
               <th>Bid</th>
               <th>Impressions</th>
               <th>Clicks</th>
@@ -154,6 +159,7 @@
                   class="ad-image"
                 />
               </td>
+              <td>{{.RedirectLink}}</td>
               <td>{{.BidValue}}</td>
               <td>{{.Impressions}}</td>
               <td>{{.Clicks}}</td>
