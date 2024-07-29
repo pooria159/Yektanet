@@ -33,7 +33,7 @@ func (ctrl AdController) GetAllActiveAds(c *gin.Context) {
 func (ctrl AdController) CreateAd(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil || id <= 0 {
-		c.HTML(http.StatusBadRequest, "advertiser.html", gin.H{"aderror": "Invalid Advertiser ID"})
+		c.HTML(http.StatusBadRequest, "advertiser.html", gin.H{"notfounderror": "Invalid Advertiser ID"})
 		return
 	}
 
@@ -41,7 +41,7 @@ func (ctrl AdController) CreateAd(c *gin.Context) {
 	bid ,_ := strconv.Atoi(c.PostForm("bid"))
 	file, err := c.FormFile("image")
 	if err != nil {
-		c.HTML(http.StatusBadRequest, "advertiser.html", gin.H{"aderror": "Image Upload Failed"})
+		c.HTML(http.StatusBadRequest, "advertiser.html", gin.H{"notfounderror": "Image Upload Failed"})
 		return
 	}
 
@@ -55,7 +55,7 @@ func (ctrl AdController) CreateAd(c *gin.Context) {
 	imagePath := filepath.Join("media", newFilename)
 	imagePath = strings.ReplaceAll(imagePath, "\\", "/")
 	if err := c.SaveUploadedFile(file, imagePath); err != nil {
-		c.HTML(http.StatusInternalServerError, "advertiser.html", gin.H{"aderror": "Failed To Save Image"})
+		c.HTML(http.StatusInternalServerError, "advertiser.html", gin.H{"notfounderror": "Failed To Save Image"})
 		return
 	}
 
@@ -68,7 +68,7 @@ func (ctrl AdController) CreateAd(c *gin.Context) {
 	}
 	
 	if err := ctrl.Repo.Save(ad); err != nil {
-		c.HTML(http.StatusInternalServerError, "advertiser.html", gin.H{"aderror": "The Ad Was Not Created"})
+		c.HTML(http.StatusInternalServerError, "advertiser.html", gin.H{"notfounderror": "The Ad Was Not Created"})
 		return
 	}
 
