@@ -208,6 +208,9 @@
             },
             stopOnFocus: true,
           }).showToast();
+          setTimeout(function () {
+            window.location.href = "/publishers/{{.publisher.ID}}";
+          }, 1500);
         }
 
         if (successMessage) {

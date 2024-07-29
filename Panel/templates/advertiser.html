@@ -121,7 +121,7 @@
             </tr>
             <tr>
               <th><label for="bid">Bid:</label></th>
-              <td><input type="text" id="bid" name="bid" required /></td>
+              <td><input type="number" id="bid" name="bid" min="1" step="1" required /></td>
             </tr>
             <tr>
               <td colspan="2"><button type="submit">Create Ad</button></td>
@@ -207,6 +207,8 @@
 
         var errorMessage = "{{.error}}";
         var successMessage = "{{.success}}";
+        var adsuccessMessage = "{{.adsuccess}}";
+        var aderrorMessage = "{{.aderror}}";
 
         if (errorMessage) {
           Toastify({
@@ -235,7 +237,44 @@
             },
             stopOnFocus: true,
           }).showToast();
+          setTimeout(function () {
+            window.location.href = "/advertisers/{{.advertiser.ID}}";
+          }, 1500);
         }
+
+        if (aderrorMessage) {
+          Toastify({
+            text: aderrorMessage,
+            duration: 3000,
+            close: false,
+            gravity: "top",
+            position: "left",
+            backgroundColor: "rgba(150, 0, 0, 0.3)",
+            style: {
+              border: "2px solid rgba(150, 0, 0, 1)",
+              fontSize: "20px",
+              padding: "20px",
+              minWidth: "350px",
+              minHeight: "50px",
+              width: "350px",
+              textAlign: "center",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              borderRadius: "15px",
+              position: "fixed",
+              top: "20px",
+              left: "20px",
+              color: "#fff",
+            },
+            stopOnFocus: true,
+          }).showToast();
+          setTimeout(function () {
+            window.location.href = "/advertisers/{{.ad.AdvertiserID}}";
+          }, 1500);
+        }
+
+
 
         if (successMessage) {
           Toastify({
@@ -268,6 +307,39 @@
             window.location.href = "/advertisers/{{.advertiser.ID}}";
           }, 1500);
         }
+
+        if (adsuccessMessage) {
+          Toastify({
+            text: adsuccessMessage,
+            duration: 3000,
+            close: false,
+            gravity: "top",
+            position: "left",
+            backgroundColor: "rgba(0, 150, 0, 0.3)",
+            style: {
+              border: "2px solid rgba(0, 150, 0, 1)",
+              fontSize: "20px",
+              padding: "20px",
+              minWidth: "350px",
+              minHeight: "50px",
+              width: "350px",
+              textAlign: "center",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              borderRadius: "15px",
+              position: "fixed",
+              top: "20px",
+              left: "20px",
+              color: "#fff",
+            },
+            stopOnFocus: true,
+          }).showToast();
+          setTimeout(function () {
+            window.location.href = "/advertisers/{{.ad.AdvertiserID}}";
+          }, 1500);
+        }
+
       });
 
       function toggleAdStatus(adId) {
