@@ -178,6 +178,7 @@ func generateSignedEventInfo(action string, selectedAd FetchedAd, requestingPubl
 	eventInfo.UserID = generateRandomToken(USER_TOKEN_SIZE)
 	eventInfo.AdURL = selectedAd.RedirectLink
 	eventInfo.EventType = action
+	eventInfo.StandardClaims.IssuedAt = time.Now().Unix()
 
 	signedInfo, err := signEvent(&eventInfo)
 	if err != nil {
