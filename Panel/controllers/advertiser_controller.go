@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"go-ad-panel/models"
 	"go-ad-panel/repositories"
@@ -14,18 +13,19 @@ import (
 // }
 
 type AdvertiserController struct {
-    Repo repositories.AdvertiserRepositoryInterface
+	Repo repositories.AdvertiserRepositoryInterface
 }
+
 // IS Okey
 func (ctrl AdvertiserController) AdvertiserPanel(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+	if err != nil || id <= 0 {
+		c.HTML(http.StatusBadRequest, "advertiser.html", gin.H{"error": "Invalid ID"})
 		return
 	}
 	advertiser, ads, err := ctrl.Repo.FindByIDWithAds(uint(id))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Advertiser not found"})
+	if err != nil || advertiser.ID == 0 {
+		c.HTML(http.StatusNotFound, "advertiser.html", gin.H{"error": "Advertiser not found"})
 		return
 	}
 	c.HTML(http.StatusOK, "advertiser.html", gin.H{"advertiser": advertiser, "ads": ads})
@@ -70,8 +70,7 @@ func (ctrl AdvertiserController) UpdateAdvertiser(c *gin.Context) {
 		return
 	}
 	var advertiser models.Advertiser
-	if err := c.ShouldBindJSON(&advertiser); 
-	err != nil {
+	if err := c.ShouldBindJSON(&advertiser); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -114,23 +113,38 @@ func (ctrl AdvertiserController) GetAllAdvertisers(c *gin.Context) {
 
 // IS Okey
 func (ctrl AdvertiserController) ChargeAdvertiser(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
-		return
-	}
-	advertiser, err := ctrl.Repo.FindByID(uint(id))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Advertiser not found"})
-		return
-	}
-	amountStr := c.PostForm("amount")
-	amount, err := strconv.ParseFloat(amountStr, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid amount"})
-		return
-	}
-	advertiser.Credit += int(amount)
-	ctrl.Repo.Update(&advertiser)
-	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/advertisers/%d", id))
+    id, err := strconv.Atoi(c.Param("id"))
+    if err != nil || id <= 0 {
+        c.HTML(http.StatusBadRequest, "advertiser.html", gin.H{"error": "Invalid ID"})
+        return
+    }
+
+    advertiser, err := ctrl.Repo.FindByID(uint(id))
+    if err != nil || advertiser.ID == 0 {
+        c.HTML(http.StatusNotFound, "advertiser.html", gin.H{"error": "Advertiser Not Found"})
+        return
+    }
+
+    amountStr := c.PostForm("amount")
+    amount, err := strconv.ParseFloat(amountStr, 64)
+    if err != nil || amount <= 0 {
+        c.HTML(http.StatusBadRequest, "advertiser.html", gin.H{"advertiser": advertiser, "error": "Invalid Amount"})
+        return
+    }
+
+	if amount != float64(int(amount)) {
+        c.HTML(http.StatusBadRequest, "advertiser.html", gin.H{"advertiser": advertiser, "error": "Charge must be an integer"})
+        return
+    }
+
+	intAmount := int(amount)
+
+    advertiser.Credit += intAmount
+    err = ctrl.Repo.Update(&advertiser)
+    if err != nil {
+        c.HTML(http.StatusInternalServerError, "advertiser.html", gin.H{"advertiser": advertiser, "error": "Internal Server Error"})
+        return
+    }
+
+    c.HTML(http.StatusOK, "advertiser.html", gin.H{"advertiser": advertiser, "success": "Charge Successful"})
 }

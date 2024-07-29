@@ -163,12 +163,12 @@ func TestPublisherPanel(t *testing.T) {
         router := gin.Default()
         router.LoadHTMLGlob("../templates/*")
         router.GET("/publisher/:id", ctrl.PublisherPanel)
-        mockRepo.On("FindByID", uint(2)).Return(models.Publisher{}, fmt.Errorf("Publisher not found"))
+        mockRepo.On("FindByID", uint(2)).Return(models.Publisher{}, fmt.Errorf("Publisher Not Found"))
         w := httptest.NewRecorder()
         req, _ := http.NewRequest("GET", "/publisher/2", nil)
         router.ServeHTTP(w, req)
         assert.Equal(t, http.StatusNotFound, w.Code)
-        assert.Contains(t, w.Body.String(), "Publisher not found")
+        assert.Contains(t, w.Body.String(), "Publisher Not Found")
     })
 }
 
@@ -177,81 +177,87 @@ func TestPublisherPanel(t *testing.T) {
 func TestPublisherWithdraw(t *testing.T) {
     gin.SetMode(gin.TestMode)
 
-    // t.Run("Invalid ID", func(t *testing.T) {
-    //     mockRepo := new(MockPublisherRepository)
-    //     ctrl := PublisherController{Repo: mockRepo}
-    //     router := gin.Default()
-    //     router.POST("/publisher/:id/withdraw", ctrl.PublisherWithdraw)
-    //     w := httptest.NewRecorder()
-    //     req, _ := http.NewRequest("POST", "/publisher/abc/withdraw", nil)
-    //     router.ServeHTTP(w, req)
-    //     assert.Equal(t, http.StatusBadRequest, w.Code)
-    //     assert.Contains(t, w.Body.String(), "Invalid ID")
-    // })
-
-    // t.Run("Publisher Not Found", func(t *testing.T) {
-    //     mockRepo := new(MockPublisherRepository)
-    //     ctrl := PublisherController{Repo: mockRepo}
-    //     router := gin.Default()
-    //     router.POST("/publisher/:id/withdraw", ctrl.PublisherWithdraw)
-    //     mockRepo.On("FindByID", uint(2)).Return(models.Publisher{}, fmt.Errorf("Publisher not found"))
-    //     w := httptest.NewRecorder()
-    //     req, _ := http.NewRequest("POST", "/publisher/2/withdraw", nil)
-    //     router.ServeHTTP(w, req)
-    //     assert.Equal(t, http.StatusNotFound, w.Code)
-    //     assert.Contains(t, w.Body.String(), "Publisher not found")
-    // })
-
-    // t.Run("Invalid Amount", func(t *testing.T) {
-    //     mockRepo := new(MockPublisherRepository)
-    //     ctrl := PublisherController{Repo: mockRepo}
-    //     router := gin.Default()
-    //     router.POST("/publisher/:id/withdraw", ctrl.PublisherWithdraw)
-    //     publisher := models.Publisher{Model: gorm.Model{ID: 1}, Credit: 100}
-    //     mockRepo.On("FindByID", uint(1)).Return(publisher, nil)
-    //     w := httptest.NewRecorder()
-    //     form := url.Values{}
-    //     form.Set("amount", "invalid")
-    //     req, _ := http.NewRequest("POST", "/publisher/1/withdraw", strings.NewReader(form.Encode()))
-    //     req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-    //     router.ServeHTTP(w, req)
-
-    //     assert.Equal(t, http.StatusBadRequest, w.Code)
-    //     assert.Contains(t, w.Body.String(), "Invalid amount")
-    // })
-
-    // t.Run("Insufficient Balance", func(t *testing.T) {
-    //     mockRepo := new(MockPublisherRepository)
-    //     ctrl := PublisherController{Repo: mockRepo}
-    //     router := gin.Default()
-    //     router.POST("/publisher/:id/withdraw", ctrl.PublisherWithdraw)
-    //     publisher := models.Publisher{Model: gorm.Model{ID: 1}, Credit: 50}
-    //     mockRepo.On("FindByID", uint(1)).Return(publisher, nil)
-    //     w := httptest.NewRecorder()
-    //     form := url.Values{}
-    //     form.Set("amount", "100")
-    //     req, _ := http.NewRequest("POST", "/publisher/1/withdraw", strings.NewReader(form.Encode()))
-    //     req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-    //     router.ServeHTTP(w, req)
-    //     assert.Equal(t, http.StatusBadRequest, w.Code)
-    //     assert.Contains(t, w.Body.String(), "Insufficient balance")
-    // })
-
-    t.Run("Successful Withdrawal", func(t *testing.T) {
+    t.Run("Invalid ID", func(t *testing.T) {
         mockRepo := new(MockPublisherRepository)
         ctrl := PublisherController{Repo: mockRepo}
         router := gin.Default()
-        router.POST("/publisher/:id/withdraw", ctrl.PublisherWithdraw)
+        router.LoadHTMLFiles("../templates/publisher.html")
+        router.POST("/publishers/:id/withdraw", ctrl.PublisherWithdraw)
+        w := httptest.NewRecorder()
+        req, _ := http.NewRequest("POST", "/publishers/abc/withdraw", nil)
+        router.ServeHTTP(w, req)
+        assert.Equal(t, http.StatusBadRequest, w.Code)
+        assert.Contains(t, w.Body.String(), "Invalid ID")
+    })
+    
+
+    t.Run("Publisher Not Found", func(t *testing.T) {
+        mockRepo := new(MockPublisherRepository)
+        ctrl := PublisherController{Repo: mockRepo}
+        router := gin.Default()
+        router.POST("/publishers/:id/withdraw", ctrl.PublisherWithdraw)
+        router.LoadHTMLFiles("../templates/publisher.html")
+        mockRepo.On("FindByID", uint(2)).Return(models.Publisher{}, fmt.Errorf("Publisher Not Found"))
+        w := httptest.NewRecorder()
+        req, _ := http.NewRequest("POST", "/publishers/2/withdraw", nil)
+        router.ServeHTTP(w, req)
+        assert.Equal(t, http.StatusNotFound, w.Code)
+        assert.Contains(t, w.Body.String(), "Publisher Not Found")
+    })
+
+    t.Run("Invalid Amount", func(t *testing.T) {
+        mockRepo := new(MockPublisherRepository)
+        ctrl := PublisherController{Repo: mockRepo}
+        router := gin.Default()
+        router.LoadHTMLFiles("../templates/publisher.html")
+        router.POST("/publishers/:id/withdraw", ctrl.PublisherWithdraw)
+        publisher := models.Publisher{Model: gorm.Model{ID: 1}, Credit: 100}
+        mockRepo.On("FindByID", uint(1)).Return(publisher, nil)
+        w := httptest.NewRecorder()
+        form := url.Values{}
+        form.Set("amount", "invalid")
+        req, _ := http.NewRequest("POST", "/publishers/1/withdraw", strings.NewReader(form.Encode()))
+        req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+        router.ServeHTTP(w, req)
+        assert.Equal(t, http.StatusBadRequest, w.Code)
+        assert.Contains(t, w.Body.String(), "Invalid Amount")
+    })
+
+    t.Run("Insufficient Balance", func(t *testing.T) {
+        mockRepo := new(MockPublisherRepository)
+        ctrl := PublisherController{Repo: mockRepo}
+        router := gin.Default()
+        router.LoadHTMLFiles("../templates/publisher.html")
+        router.POST("/publishers/:id/withdraw", ctrl.PublisherWithdraw)
+        publisher := models.Publisher{Model: gorm.Model{ID: 1}, Credit: 50}
+        mockRepo.On("FindByID", uint(1)).Return(publisher, nil)
+        w := httptest.NewRecorder()
+        form := url.Values{}
+        form.Set("amount", "100")
+        req, _ := http.NewRequest("POST", "/publishers/1/withdraw", strings.NewReader(form.Encode()))
+        req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+        router.ServeHTTP(w, req)
+        assert.Equal(t, http.StatusBadRequest, w.Code)
+        assert.Contains(t, w.Body.String(), "Insufficient Balance")
+    })
+
+    t.Run("Withdrawal Successful", func(t *testing.T) {
+        mockRepo := new(MockPublisherRepository)
+        ctrl := PublisherController{Repo: mockRepo}
+        router := gin.Default()
+        router.LoadHTMLFiles("../templates/publisher.html")
+        router.POST("/publishers/:id/withdraw", ctrl.PublisherWithdraw)
         publisher := models.Publisher{Model: gorm.Model{ID: 1}, Credit: 100}
         mockRepo.On("FindByID", uint(1)).Return(publisher, nil)
         mockRepo.On("Update", mock.AnythingOfType("*models.Publisher")).Return(nil)
         w := httptest.NewRecorder()
         form := url.Values{}
         form.Set("amount", "50")
-        req, _ := http.NewRequest("POST", "/publisher/1/withdraw", strings.NewReader(form.Encode()))
+        req, _ := http.NewRequest("POST", "/publishers/1/withdraw", strings.NewReader(form.Encode()))
         req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
         router.ServeHTTP(w, req)
-        assert.Equal(t, http.StatusSeeOther, w.Code)
+        assert.Equal(t, http.StatusOK, w.Code)
+        assert.Contains(t, w.Body.String(), "Withdrawal Successful")
     })
 }
 
@@ -333,12 +339,11 @@ func TestChargeAdvertiser(t *testing.T) {
 		mockRepo := new(MockAdvertiserRepository)
 		ctrl := AdvertiserController{Repo: mockRepo}
 		router := gin.Default()
+        router.LoadHTMLGlob("../templates/*")
 		router.POST("/advertisers/:id/charge", ctrl.ChargeAdvertiser)
-
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", "/advertisers/abc/charge", nil)
 		router.ServeHTTP(w, req)
-
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 		assert.Contains(t, w.Body.String(), "Invalid ID")
 	})
@@ -347,64 +352,59 @@ func TestChargeAdvertiser(t *testing.T) {
 		mockRepo := new(MockAdvertiserRepository)
 		ctrl := AdvertiserController{Repo: mockRepo}
 		router := gin.Default()
+        router.LoadHTMLGlob("../templates/*")
 		router.POST("/advertisers/:id/charge", ctrl.ChargeAdvertiser)
-
-		mockRepo.On("FindByID", uint(1)).Return(models.Advertiser{}, fmt.Errorf("Advertiser not found"))
-
+		mockRepo.On("FindByID", uint(1)).Return(models.Advertiser{}, fmt.Errorf("Advertiser Not Found"))
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", "/advertisers/1/charge", nil)
 		router.ServeHTTP(w, req)
-
 		assert.Equal(t, http.StatusNotFound, w.Code)
-		assert.Contains(t, w.Body.String(), "Advertiser not found")
+		assert.Contains(t, w.Body.String(), "Advertiser Not Found")
 	})
 
 	t.Run("Invalid amount", func(t *testing.T) {
 		mockRepo := new(MockAdvertiserRepository)
 		ctrl := AdvertiserController{Repo: mockRepo}
 		router := gin.Default()
+        router.LoadHTMLGlob("../templates/*")
 		router.POST("/advertisers/:id/charge", ctrl.ChargeAdvertiser)
-
 		advertiser := models.Advertiser{Model: gorm.Model{ID: 1}, Credit: 100}
 		mockRepo.On("FindByID", uint(1)).Return(advertiser, nil)
-
 		form := url.Values{}
 		form.Add("amount", "invalid")
 		body := bytes.NewBufferString(form.Encode())
-
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", "/advertisers/1/charge", body)
 		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 		router.ServeHTTP(w, req)
-
 		assert.Equal(t, http.StatusBadRequest, w.Code)
-		assert.Contains(t, w.Body.String(), "Invalid amount")
+		assert.Contains(t, w.Body.String(), "Invalid Amount")
 	})
 
-	t.Run("Successful Charge", func(t *testing.T) {
-		mockRepo := new(MockAdvertiserRepository)
-		ctrl := AdvertiserController{Repo: mockRepo}
-		router := gin.Default()
-		router.POST("/advertisers/:id/charge", ctrl.ChargeAdvertiser)
-
-		advertiser := models.Advertiser{Model: gorm.Model{ID: 1}, Credit: 100}
-		mockRepo.On("FindByID", uint(1)).Return(advertiser, nil)
-		mockRepo.On("Update", mock.Anything).Return(nil).Run(func(args mock.Arguments) {
-			updatedAdvertiser := args.Get(0).(*models.Advertiser)
-			updatedAdvertiser.Credit = 150 // Simulate the successful update
-		})
-
-		form := url.Values{}
-		form.Add("amount", "50")
-		body := bytes.NewBufferString(form.Encode())
-
-		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/advertisers/1/charge", body)
-		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusSeeOther, w.Code)
-	})
+    t.Run("Charge Successful", func(t *testing.T) {
+        mockRepo := new(MockAdvertiserRepository)
+        ctrl := AdvertiserController{Repo: mockRepo}
+        router := gin.Default()
+        router.LoadHTMLGlob("../templates/*")
+        router.POST("/advertisers/:id/charge", ctrl.ChargeAdvertiser)
+    
+        advertiser := models.Advertiser{Model: gorm.Model{ID: 1}, Credit: 100}
+        mockRepo.On("FindByID", uint(1)).Return(advertiser, nil)
+        mockRepo.On("Update", mock.Anything).Return(nil).Run(func(args mock.Arguments) {
+            updatedAdvertiser := args.Get(0).(*models.Advertiser)
+            updatedAdvertiser.Credit = 150 
+        })
+    
+        form := url.Values{}
+        form.Add("amount", "50")
+        body := bytes.NewBufferString(form.Encode())
+        w := httptest.NewRecorder()
+        req, _ := http.NewRequest("POST", "/advertisers/1/charge", body)
+        req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+        router.ServeHTTP(w, req)
+        assert.Equal(t, http.StatusOK, w.Code)
+        assert.Contains(t, w.Body.String(), "Charge Successful")
+    })
 }
 
 
