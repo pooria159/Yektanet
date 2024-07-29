@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -50,6 +51,40 @@ func NewEventServer() *EventServer {
 	}
 }
 
+var blacklistedUserAgents = []string{
+	"Python",
+	"curl",
+	"Postman",
+	"HttpClient",
+	"Java",
+	"Go-http-client",
+	"Wget",
+	// Add other known non-browser User-Agents as needed
+}
+
+func UserAgentBlacklist() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userAgent := c.GetHeader("User-Agent")
+
+		if isBlacklisted(userAgent) {
+			// Block the request
+			c.JSON(http.StatusForbidden, gin.H{"message": "Blocked: Disallowed User-Agent"})
+			c.Abort()
+		} else {
+			c.Next() // Continue to the next handler
+		}
+	}
+}
+
+func isBlacklisted(userAgent string) bool {
+	for _, ua := range blacklistedUserAgents {
+		if strings.Contains(userAgent, ua) {
+			return true
+		}
+	}
+	return false
+}
+
 // handleImpression handles the impression events
 func (s *EventServer) handleImpression(c *gin.Context) {
 	// Extract event information from url
@@ -58,7 +93,7 @@ func (s *EventServer) handleImpression(c *gin.Context) {
 	parsedToken, err := jwt.ParseWithClaims(eventInfoToken, &event, func(t *jwt.Token) (interface{}, error) {
 		return JWT_ENCRYPTION_KEY, nil
 	})
-	if err != nil || !parsedToken.Valid{
+	if err != nil || !parsedToken.Valid {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid impression token"})
 	}
 
@@ -87,10 +122,10 @@ func (s *EventServer) handleClick(c *gin.Context) {
 	parsedToken, err := jwt.ParseWithClaims(eventInfoToken, &event, func(t *jwt.Token) (interface{}, error) {
 		return JWT_ENCRYPTION_KEY, nil
 	})
-	if err != nil || !parsedToken.Valid{
+	if err != nil || !parsedToken.Valid {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid click token"})
 	}
-	
+
 	if _, ok := s.clicks[event.UserID]; !ok {
 		value := Value{
 			AdID:        event.AdID,
@@ -149,6 +184,8 @@ func (s *EventServer) sendToKafka(event Event, eventType string) {
 // SetupRouter sets up the routes for the EventServer
 func (s *EventServer) SetupRouter() *gin.Engine {
 	router := gin.Default()
+	router.Use(UserAgentBlacklist())
+
 	router.GET("/impression/:info", s.handleImpression)
 	router.GET("/click/:info", s.handleClick)
 	return router
