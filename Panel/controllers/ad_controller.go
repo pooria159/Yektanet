@@ -15,11 +15,11 @@ import (
 
 type AdController struct {
 	Repo repositories.AdRepository
-	//temp
 	RepoAdvertiser repositories.AdvertiserRepository
 	RepoPublisher  repositories.PublisherRepository
 }
 
+//IS Okey
 func (ctrl AdController) GetAllActiveAds(c *gin.Context) {
 	ads, err := ctrl.Repo.FindAllActiveAds()
 	if err != nil {
@@ -29,30 +29,24 @@ func (ctrl AdController) GetAllActiveAds(c *gin.Context) {
 	c.JSON(http.StatusOK, ads)
 }
 
-// CreateAd handles the creation of a new ad with image upload.
+//IS Okey
 func (ctrl AdController) CreateAd(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid advertiser ID"})
+	if err != nil || id <= 0 {
+		c.HTML(http.StatusBadRequest, "advertiser.html", gin.H{"aderror": "Invalid Advertiser ID"})
 		return
 	}
 
 	title := c.PostForm("title")
-	bid, err := strconv.Atoi(c.PostForm("bid"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid bid value"})
-		return
-	}
+	bid ,_ := strconv.Atoi(c.PostForm("bid"))
 	redirect_link := c.PostForm("redirect_link")
 
 	// Handle file upload
 	file, err := c.FormFile("image")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Image upload failed"})
+		c.HTML(http.StatusBadRequest, "advertiser.html", gin.H{"aderror": "Image Upload Failed"})
 		return
 	}
-
-	// Save the file to the media directory
 
 	// Generate new filename with timestamp and advertiser ID
 	ext := filepath.Ext(file.Filename)
@@ -62,11 +56,9 @@ func (ctrl AdController) CreateAd(c *gin.Context) {
 
 	// Save the file to the media directory
 	imagePath := filepath.Join("media", newFilename)
-	// Convert the imagePath to use forward slashes instead of backslashes
 	imagePath = strings.ReplaceAll(imagePath, "\\", "/")
-
 	if err := c.SaveUploadedFile(file, imagePath); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save image"})
+		c.HTML(http.StatusInternalServerError, "advertiser.html", gin.H{"aderror": "Failed To Save Image"})
 		return
 	}
 
@@ -78,13 +70,15 @@ func (ctrl AdController) CreateAd(c *gin.Context) {
 		AdvertiserID: id,
 		RedirectLink: redirect_link,
 	}
-
+	
 	if err := ctrl.Repo.Save(ad); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.HTML(http.StatusInternalServerError, "advertiser.html", gin.H{"aderror": "The Ad Was Not Created"})
 		return
 	}
-	c.Redirect(http.StatusFound, fmt.Sprintf("/advertisers/%d", id))
+
+	c.HTML(http.StatusOK, "advertiser.html", gin.H{"adsuccess": "Ad Created Successfully", "ad": ad})
 }
+
 
 func (ctrl AdController) ToggleActivation(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
@@ -103,67 +97,11 @@ func (ctrl AdController) ToggleActivation(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-//temp : only for phase 1
-
 type EventRequest struct {
 	EventType   string `json:"event_type" binding:"required"`
 	PublisherID string `json:"publisher_id" binding:"required"`
 }
 
-//	func (ctrl AdController) HandleEvent(c *gin.Context) {
-//		// Convert the id parameter from string to int
-//		id, err := strconv.Atoi(c.Param("id"))
-//		if err != nil {
-//			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
-//			return
-//		}
-//
-//		ad, err := ctrl.Repo.FindByID(id)
-//		if err != nil {
-//			c.JSON(http.StatusNotFound, gin.H{"error": "Ad not found"})
-//			return
-//		}
-//
-//		// Define a struct to bind JSON fields
-//		var eventRequest EventRequest
-//
-//		// Bind the JSON fields to the struct and check for errors
-//		if err := c.ShouldBindJSON(&eventRequest); err != nil {
-//			c.JSON(http.StatusBadRequest, gin.H{"error": "here"})
-//			return
-//		}
-//		advertiser, err := ctrl.RepoAdvertiser.FindByID(uint(eventRequest.AdvertiserID))
-//		if err != nil {
-//			c.JSON(http.StatusNotFound, gin.H{"error": "Advertiser not found"})
-//			return
-//		}
-//		publisher, err := ctrl.RepoPublisher.FindByID(uint(eventRequest.PublisherID))
-//		if err != nil {
-//			c.JSON(http.StatusNotFound, gin.H{"error": "Publisher not found"})
-//			return
-//		}
-//
-//		switch eventRequest.EventType {
-//		case "click":
-//			ad.Clicks += 1
-//			advertiser.Credit -= ad.BidValue
-//			publisher.Credit += ad.BidValue
-//		case "impression":
-//			ad.Impressions += 1
-//		default:
-//			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event type"})
-//			return
-//		}
-//		err = ctrl.Repo.Update(&ad)
-//		err = ctrl.RepoAdvertiser.Update(&advertiser)
-//		err = ctrl.RepoPublisher.Update(&publisher)
-//		if err != nil {
-//			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to handle error"})
-//			return
-//		}
-//
-//		c.JSON(http.StatusOK, gin.H{"message": "Event successfully processed"})
-//	}
 func (ctrl AdController) HandleEventAtomic(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

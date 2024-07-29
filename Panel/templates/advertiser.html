@@ -33,19 +33,23 @@
         width: 100%;
         border-collapse: collapse;
       }
-      #adsTable th, #adsTable td {
+      #adsTable th,
+      #adsTable td {
         padding: 5px;
         border: 1px solid #ddd;
         text-align: center;
       }
-      #chargeAccountTable th , #chargeAccountTable td,
-      #advertiserInfoTable th, #advertiserInfoTable td,
-      #createAdTable th, #createAdTable td {
+      #chargeAccountTable th,
+      #chargeAccountTable td,
+      #advertiserInfoTable th,
+      #advertiserInfoTable td,
+      #createAdTable th,
+      #createAdTable td {
         padding: 5px;
         border: 1px solid #ddd;
         text-align: left;
       }
-      
+
       input,
       button {
         margin-bottom: 10px;
@@ -79,6 +83,7 @@
         border-radius: 10px;
       }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   </head>
   <body>
     <div class="container">
@@ -120,7 +125,7 @@
             </tr>
             <tr>
               <th><label for="bid">Bid:</label></th>
-              <td><input type="text" id="bid" name="bid" required /></td>
+              <td><input type="number" id="bid" name="bid" min="1" step="1" required /></td>
             </tr>
             <tr>
               <td colspan="2"><button type="submit">Create Ad</button></td>
@@ -148,7 +153,11 @@
             <tr>
               <td><a href="/ads/{{.ID}}" class="ad-title">{{.Title}}</a></td>
               <td>
-                <img src="../{{.ImagePath}}" alt="{{.Title}}" class="ad-image" />
+                <img
+                  src="../{{.ImagePath}}"
+                  alt="{{.Title}}"
+                  class="ad-image"
+                />
               </td>
               <td>{{.RedirectLink}}</td>
               <td>{{.BidValue}}</td>
@@ -201,7 +210,144 @@
             impressions
           );
         });
+
+        var errorMessage = "{{.error}}";
+        var successMessage = "{{.success}}";
+        var adsuccessMessage = "{{.adsuccess}}";
+        var aderrorMessage = "{{.aderror}}";
+
+        if (errorMessage) {
+          Toastify({
+            text: errorMessage,
+            duration: 3000,
+            close: false,
+            gravity: "top",
+            position: "left",
+            backgroundColor: "rgba(150, 0, 0, 0.3)",
+            style: {
+              border: "2px solid rgba(150, 0, 0, 1)",
+              fontSize: "20px",
+              padding: "20px",
+              minWidth: "350px",
+              minHeight: "50px",
+              width: "350px",
+              textAlign: "center",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              borderRadius: "15px",
+              position: "fixed",
+              top: "20px",
+              left: "20px",
+              color: "#fff",
+            },
+            stopOnFocus: true,
+          }).showToast();
+          setTimeout(function () {
+            window.location.href = "/advertisers/{{.advertiser.ID}}";
+          }, 1500);
+        }
+
+        if (aderrorMessage) {
+          Toastify({
+            text: aderrorMessage,
+            duration: 3000,
+            close: false,
+            gravity: "top",
+            position: "left",
+            backgroundColor: "rgba(150, 0, 0, 0.3)",
+            style: {
+              border: "2px solid rgba(150, 0, 0, 1)",
+              fontSize: "20px",
+              padding: "20px",
+              minWidth: "350px",
+              minHeight: "50px",
+              width: "350px",
+              textAlign: "center",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              borderRadius: "15px",
+              position: "fixed",
+              top: "20px",
+              left: "20px",
+              color: "#fff",
+            },
+            stopOnFocus: true,
+          }).showToast();
+          setTimeout(function () {
+            window.location.href = "/advertisers/{{.ad.AdvertiserID}}";
+          }, 1500);
+        }
+
+
+
+        if (successMessage) {
+          Toastify({
+            text: successMessage,
+            duration: 3000,
+            close: false,
+            gravity: "top",
+            position: "left",
+            backgroundColor: "rgba(0, 150, 0, 0.3)",
+            style: {
+              border: "2px solid rgba(0, 150, 0, 1)",
+              fontSize: "20px",
+              padding: "20px",
+              minWidth: "350px",
+              minHeight: "50px",
+              width: "350px",
+              textAlign: "center",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              borderRadius: "15px",
+              position: "fixed",
+              top: "20px",
+              left: "20px",
+              color: "#fff",
+            },
+            stopOnFocus: true,
+          }).showToast();
+          setTimeout(function () {
+            window.location.href = "/advertisers/{{.advertiser.ID}}";
+          }, 1500);
+        }
+
+        if (adsuccessMessage) {
+          Toastify({
+            text: adsuccessMessage,
+            duration: 3000,
+            close: false,
+            gravity: "top",
+            position: "left",
+            backgroundColor: "rgba(0, 150, 0, 0.3)",
+            style: {
+              border: "2px solid rgba(0, 150, 0, 1)",
+              fontSize: "20px",
+              padding: "20px",
+              minWidth: "350px",
+              minHeight: "50px",
+              width: "350px",
+              textAlign: "center",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              borderRadius: "15px",
+              position: "fixed",
+              top: "20px",
+              left: "20px",
+              color: "#fff",
+            },
+            stopOnFocus: true,
+          }).showToast();
+          setTimeout(function () {
+            window.location.href = "/advertisers/{{.ad.AdvertiserID}}";
+          }, 1500);
+        }
+
       });
+
       function toggleAdStatus(adId) {
         const url = `/ads/${adId}/toggle`;
         fetch(url, {
