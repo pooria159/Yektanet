@@ -15,41 +15,17 @@
           const adContent = `
                 <img src="https://panel.lontra.tech/${ad.ImagePath}" alt="${ad.Title}" style="width:100%;" />
                 <h3>${ad.Title}</h3>
-                <a ${ad.ClickLink} target="_blank" class="click-here">Click here</a>
+                <a target="_blank" class="click-here" href="${ad.ClickLink}">Click here</a>
               `;
               // delete href
           adContainer.innerHTML = adContent;
           const observer = new IntersectionObserver((entries) => {
             if (entries[0].isIntersecting) {
-              fetch(ad.ImpressionLink,{
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-              });
+              fetch(ad.ImpressionLink);
               observer.disconnect();
             }
           }, { threshold: 1.0 });
           observer.observe(adContainer);
-          document.querySelector('.click-here').addEventListener('click', function (event) {
-            event.preventDefault();
-            fetch(ad.ClickLink, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ ad: ad.Title, clickedAt: new Date().toISOString() })
-            })
-              .then(response => response.json())
-              .then(data => {
-                console.log('Click recorded:', data);
-                // window.open(ad.ClickLink, '_blank');
-                // dont use it
-              })
-              .catch(error => {
-                console.error('Error recording click:', error);
-              });
-          });
         } else {
           adContainer.innerHTML = '<div class="ad-content">No ad available</div>';
         }
