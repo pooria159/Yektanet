@@ -203,6 +203,7 @@ func (s *EventServer) verifyCaptcha(c *gin.Context) {
 			log.Printf("Failed to call API for impression event: %v\n", err)
 		}
 	}
+	c.Redirect(http.StatusSeeOther, event.AdURL)
 
 }
 
@@ -223,7 +224,7 @@ func (s *EventServer) handleClick(c *gin.Context) {
 		currentTime := time.Now().Unix()
 		secondsElapsed := currentTime - issuedAt
 
-		const tokenValidityThreshold = 10
+		const tokenValidityThreshold = 4
 		if secondsElapsed < tokenValidityThreshold {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Click Time Invalid"})
 			return
