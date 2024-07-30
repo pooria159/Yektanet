@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"math/rand"
@@ -63,6 +62,10 @@ type ResponseInfo struct {
 }
 
 
+type DisableAdsRequest struct {
+	AdIDs []int `json:"ad_ids"`
+}
+
 /* Global Objects */
 
 var allFetchedAds []FetchedAd // A slice containing all ads.
@@ -119,8 +122,6 @@ func RemoveDisabledAds(disabledAdIds []int) {
 	for _, ad := range allFetchedAds {
 		shouldRemove := false
 		for _, id := range disabledAdIds {
-			fmt.Println(ad.Id)
-			fmt.Println(id)
 			if ad.Id == id {
 				shouldRemove = true
 				break
@@ -128,7 +129,6 @@ func RemoveDisabledAds(disabledAdIds []int) {
 		}
 		if !shouldRemove {
 			remainingAds = append(remainingAds, ad)
-			fmt.Println(remainingAds)
 		}
 	}
 	allFetchedAds = remainingAds
@@ -253,6 +253,17 @@ func getNewAd(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+func brake(c *gin.Context) {
+	var disableRequest DisableAdsRequest
+	if err := c.ShouldBindJSON(&disableRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		return
+	}
+
+	RemoveDisabledAds(disableRequest.AdIDs)
+	c.JSON(http.StatusOK, gin.H{"message": "Ads successfully disabled"})
+}
+
 func main() {
 	/* Configure Go's predefined logger. */
 	log.SetPrefix("AdServer:")
@@ -263,6 +274,6 @@ func main() {
 	go periodicallyFetchAds()
 	router := gin.Default()
 	router.GET(API_TEMPLATE, getNewAd)
-
+	router.POST("/api/brake", brake)
 	router.Run(":" + strconv.Itoa(ADSERVER_PORT))
 }
