@@ -194,8 +194,8 @@
       document.addEventListener("DOMContentLoaded", () => {
         const rows = document.querySelectorAll("#adTable tr");
         rows.forEach((row) => {
-          const clicks = parseInt(row.cells[4].textContent, 10);
-          const impressions = parseInt(row.cells[3].textContent, 10);
+          const clicks = parseInt(row.cells[5].textContent, 10);
+          const impressions = parseInt(row.cells[4].textContent, 10);
           row.querySelector(".ctr").textContent = calculateCTR(
             clicks,
             impressions
