@@ -10,11 +10,47 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
 
+// CONSTS
 var JWT_ENCRYPTION_KEY = []byte("Golangers:Pooria-Mohammad-Roya-Sina") // Encryption key used to sign responses.
+const (
+	recaptchaSecret = "6LfwfxsqAAAAAOjEjdTLn64TaPePPYRtIzTDVmDI"
+)
+const requestThreshold = 2
+const timeframe = 60 // in
+
+var blacklistedUserAgents = []string{
+	"Python",                // Python scripts
+	"curl",                  // cURL
+	"Postman",               // Postman API client
+	"HttpClient",            // Generic HTTP client
+	"Java",                  // Java clients
+	"Go-http-client",        // Go's default HTTP client
+	"Wget",                  // Wget utility
+	"php",                   // PHP scripts
+	"Ruby",                  // Ruby scripts
+	"Node.js",               // Node.js scripts
+	"BinGet",                // BinGet utility
+	"libwww-perl",           // Perl library
+	"Microsoft URL Control", // Microsoft URL Control tool
+	"Peach",                 // Peach fuzzing tool
+	"pxyscand",              // Proxy scanner
+	"PycURL",                // Python binding to libcurl
+	"Python-urllib",         // Python urllib library
+}
+
+//MODELS
+
+type RequestData struct {
+	Count         int
+	LastRequestAt time.Time
+}
+
+var requestLog = make(map[string]RequestData)
 
 // Event represents an event with user, publisher, ad IDs and URL
 type Event struct {
@@ -51,25 +87,14 @@ func NewEventServer() *EventServer {
 	}
 }
 
-var blacklistedUserAgents = []string{
-	"Python",                // Python scripts
-	"curl",                  // cURL
-	"Postman",               // Postman API client
-	"HttpClient",            // Generic HTTP client
-	"Java",                  // Java clients
-	"Go-http-client",        // Go's default HTTP client
-	"Wget",                  // Wget utility
-	"php",                   // PHP scripts
-	"Ruby",                  // Ruby scripts
-	"Node.js",               // Node.js scripts
-	"BinGet",                // BinGet utility
-	"libwww-perl",           // Perl library
-	"Microsoft URL Control", // Microsoft URL Control tool
-	"Peach",                 // Peach fuzzing tool
-	"pxyscand",              // Proxy scanner
-	"PycURL",                // Python binding to libcurl
-	"Python-urllib",         // Python urllib library
+type RecaptchaResponse struct {
+	Success     bool     `json:"success"`
+	ChallengeTs string   `json:"challenge_ts"`
+	Hostname    string   `json:"hostname"`
+	ErrorCodes  []string `json:"error-codes"`
 }
+
+//CONTROLLERS
 
 func UserAgentBlacklist() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -121,6 +146,65 @@ func (s *EventServer) handleImpression(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"status": "Impression processed"})
 }
+func (s *EventServer) captchaPage(c *gin.Context) {
+	eventInfoToken := c.Query("info")
+	c.HTML(http.StatusOK, "captcha.html", gin.H{
+		"eventInfoToken": eventInfoToken,
+	})
+}
+func validateCaptcha(c *gin.Context) bool {
+	recaptchaResponse := c.PostForm("g-recaptcha-response")
+	if recaptchaResponse == "" {
+		return false
+	}
+
+	resp, err := http.PostForm("https://www.google.com/recaptcha/api/siteverify",
+		url.Values{"secret": {recaptchaSecret}, "response": {recaptchaResponse}})
+	if err != nil {
+		log.Printf("Failed to verify reCAPTCHA: %v", err)
+		return false
+	}
+	defer resp.Body.Close()
+
+	var result RecaptchaResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		log.Printf("Failed to parse reCAPTCHA response: %v", err)
+		return false
+	}
+
+	return result.Success
+}
+
+func (s *EventServer) verifyCaptcha(c *gin.Context) {
+	eventInfoToken := c.PostForm("info")
+
+	if !validateCaptcha(c) {
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "CAPTCHA validation failed"})
+		return
+	}
+
+	var event Event
+	parsedToken, err := jwt.ParseWithClaims(eventInfoToken, &event, func(t *jwt.Token) (interface{}, error) {
+		return JWT_ENCRYPTION_KEY, nil
+	})
+	if err != nil || !parsedToken.Valid {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid click token"})
+		return
+	}
+	if _, ok := s.clicks[event.UserID]; !ok {
+		value := Value{
+			AdID:        event.AdID,
+			PublisherID: event.PublisherID,
+		}
+		s.clicks[event.UserID] = value
+		s.clickchan <- event
+
+		if err := s.callAPI(event); err != nil {
+			log.Printf("Failed to call API for impression event: %v\n", err)
+		}
+	}
+
+}
 
 // handleClick handles the click events
 func (s *EventServer) handleClick(c *gin.Context) {
@@ -133,6 +217,7 @@ func (s *EventServer) handleClick(c *gin.Context) {
 	if err != nil || !parsedToken.Valid {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid click token"})
 	}
+
 	if claims, ok := parsedToken.Claims.(*Event); ok {
 		issuedAt := claims.IssuedAt
 		currentTime := time.Now().Unix()
@@ -145,6 +230,31 @@ func (s *EventServer) handleClick(c *gin.Context) {
 		}
 	} else {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid claims"})
+		return
+	}
+
+	clientIP := c.ClientIP()
+	userAgent := c.GetHeader("User-Agent")
+	key := clientIP + "_" + userAgent
+
+	currentTime := time.Now()
+	requestData, exists := requestLog[key]
+	if exists {
+		if currentTime.Sub(requestData.LastRequestAt).Seconds() <= timeframe {
+			requestData.Count++
+		} else {
+			requestData.Count = 1
+		}
+		requestData.LastRequestAt = currentTime
+	} else {
+		requestData = RequestData{
+			Count:         1,
+			LastRequestAt: currentTime,
+		}
+	}
+	requestLog[key] = requestData
+	if requestData.Count > requestThreshold {
+		c.Redirect(http.StatusSeeOther, "/captcha?info="+eventInfoToken)
 		return
 	}
 
@@ -205,8 +315,12 @@ func (s *EventServer) sendToKafka(event Event, eventType string) {
 
 // SetupRouter sets up the routes for the EventServer
 func (s *EventServer) SetupRouter() *gin.Engine {
+
 	router := gin.Default()
 	router.Use(UserAgentBlacklist())
+	router.LoadHTMLFiles("captcha.html")
+	router.GET("/captcha", s.captchaPage)
+	router.POST("/verify-captcha", s.verifyCaptcha)
 
 	router.GET("/impression/:info", s.handleImpression)
 	router.GET("/click/:info", s.handleClick)
