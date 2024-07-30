@@ -133,8 +133,6 @@ func RemoveDisabledAds(disabledAdIds []int) {
 		}
 	}
 	allFetchedAds = remainingAds
-	fmt.Println("Removed ads:", disabledAdIds)
-	fmt.Println("Remaining ads:", allFetchedAds)
 }
 
 /*
