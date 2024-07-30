@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"fmt"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -132,6 +133,8 @@ func RemoveDisabledAds(disabledAdIds []int) {
 		}
 	}
 	allFetchedAds = remainingAds
+	fmt.Println("Removed ads:", disabledAdIds)
+	fmt.Println("Remaining ads:", allFetchedAds)
 }
 
 /*
