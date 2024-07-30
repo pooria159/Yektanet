@@ -203,8 +203,8 @@
       document.addEventListener("DOMContentLoaded", () => {
         const rows = document.querySelectorAll("#adTable tr");
         rows.forEach((row) => {
-          const clicks = parseInt(row.cells[4].textContent, 10);
-          const impressions = parseInt(row.cells[3].textContent, 10);
+          const clicks = parseInt(row.cells[5].textContent, 10);
+          const impressions = parseInt(row.cells[4].textContent, 10);
           row.querySelector(".ctr").textContent = calculateCTR(
             clicks,
             impressions
@@ -215,6 +215,7 @@
         var successMessage = "{{.success}}";
         var adsuccessMessage = "{{.adsuccess}}";
         var aderrorMessage = "{{.aderror}}";
+        var notfounMessage = "{{.notfounderror}}";
 
         if (errorMessage) {
           Toastify({
@@ -278,6 +279,35 @@
           setTimeout(function () {
             window.location.href = "/advertisers/{{.ad.AdvertiserID}}";
           }, 1500);
+        }
+
+        if (notfounMessage) {
+          Toastify({
+            text: notfounMessage,
+            duration: 3000,
+            close: false,
+            gravity: "top",
+            position: "left",
+            backgroundColor: "rgba(150, 0, 0, 0.3)",
+            style: {
+              border: "2px solid rgba(150, 0, 0, 1)",
+              fontSize: "20px",
+              padding: "20px",
+              minWidth: "350px",
+              minHeight: "50px",
+              width: "350px",
+              textAlign: "center",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              borderRadius: "15px",
+              position: "fixed",
+              top: "20px",
+              left: "20px",
+              color: "#fff",
+            },
+            stopOnFocus: true,
+          }).showToast();
         }
 
 

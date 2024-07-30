@@ -20,12 +20,12 @@ type AdvertiserController struct {
 func (ctrl AdvertiserController) AdvertiserPanel(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil || id <= 0 {
-		c.HTML(http.StatusBadRequest, "advertiser.html", gin.H{"error": "Invalid ID"})
+		c.HTML(http.StatusBadRequest, "advertiser.html", gin.H{"notfounderror": "Invalid ID"})
 		return
 	}
 	advertiser, ads, err := ctrl.Repo.FindByIDWithAds(uint(id))
 	if err != nil || advertiser.ID == 0 {
-		c.HTML(http.StatusNotFound, "advertiser.html", gin.H{"error": "Advertiser not found"})
+		c.HTML(http.StatusNotFound, "advertiser.html", gin.H{"notfounderror": "Advertiser not found"})
 		return
 	}
 	c.HTML(http.StatusOK, "advertiser.html", gin.H{"advertiser": advertiser, "ads": ads})
@@ -115,13 +115,13 @@ func (ctrl AdvertiserController) GetAllAdvertisers(c *gin.Context) {
 func (ctrl AdvertiserController) ChargeAdvertiser(c *gin.Context) {
     id, err := strconv.Atoi(c.Param("id"))
     if err != nil || id <= 0 {
-        c.HTML(http.StatusBadRequest, "advertiser.html", gin.H{"error": "Invalid ID"})
+        c.HTML(http.StatusBadRequest, "advertiser.html", gin.H{"notfounderror": "Invalid ID"})
         return
     }
 
     advertiser, err := ctrl.Repo.FindByID(uint(id))
     if err != nil || advertiser.ID == 0 {
-        c.HTML(http.StatusNotFound, "advertiser.html", gin.H{"error": "Advertiser Not Found"})
+        c.HTML(http.StatusNotFound, "advertiser.html", gin.H{"notfounderror": "Advertiser Not Found"})
         return
     }
 

@@ -185,6 +185,7 @@
       document.addEventListener("DOMContentLoaded", function () {
         var errorMessage = "{{.error}}";
         var successMessage = "{{.success}}";
+        var notfoundMessage = "{{.notfounderror}}";
 
         if (errorMessage) {
           Toastify({
@@ -211,6 +212,30 @@
           setTimeout(function () {
             window.location.href = "/publishers/{{.publisher.ID}}";
           }, 1500);
+        }
+
+        if (notfoundMessage) {
+          Toastify({
+            text: notfoundMessage,
+            duration: 3000,
+            close: false,
+            gravity: "top",
+            position: "left",
+            backgroundColor: "rgba(150, 0, 0, 0.3)",
+            style: {
+              border: "2px solid rgba(150, 0, 0, 1)",
+              fontSize: "20px",
+              padding: "20px",
+              minWidth: "350px",
+              minHeight: "50px",
+              textAlign: "center",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              borderRadius: "15px",
+            },
+            stopOnFocus: true,
+          }).showToast();
         }
 
         if (successMessage) {

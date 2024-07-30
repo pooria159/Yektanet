@@ -21,12 +21,12 @@ type PublisherController struct {
 func (ctrl PublisherController) PublisherPanel(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil || id <= 0 {
-		c.HTML(http.StatusBadRequest, "publisher.html", gin.H{"error": "Invalid ID"})
+		c.HTML(http.StatusBadRequest, "publisher.html", gin.H{"notfounderror": "Invalid ID"})
 		return
 	}
 	publisher, err := ctrl.Repo.FindByID(uint(id))
 	if err != nil || publisher.ID == 0 {
-		c.HTML(http.StatusNotFound, "publisher.html", gin.H{"error": "Publisher Not Found"})
+		c.HTML(http.StatusNotFound, "publisher.html", gin.H{"notfounderror": "Publisher Not Found"})
 		return
 	}
 	c.HTML(http.StatusOK, "publisher.html", gin.H{"publisher": publisher})
@@ -36,12 +36,12 @@ func (ctrl PublisherController) PublisherPanel(c *gin.Context) {
 func (ctrl PublisherController) PublisherWithdraw(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil || id <= 0 {
-		c.HTML(http.StatusBadRequest, "publisher.html", gin.H{"error": "Invalid ID"})
+		c.HTML(http.StatusBadRequest, "publisher.html", gin.H{"notfounderror": "Invalid ID"})
 		return
 	}
 	publisher, err := ctrl.Repo.FindByID(uint(id))
 	if err != nil || publisher.ID == 0 {
-		c.HTML(http.StatusNotFound, "publisher.html", gin.H{"error": "Publisher Not Found"})
+		c.HTML(http.StatusNotFound, "publisher.html", gin.H{"notfounderror": "Publisher Not Found"})
 		return
 	}
 
