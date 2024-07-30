@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"math/rand"
@@ -110,6 +111,27 @@ func fetchAdsOnce() error {
 	}
 
 	return nil
+}
+
+
+func RemoveDisabledAds(disabledAdIds []int) {
+	remainingAds := []FetchedAd{}
+	for _, ad := range allFetchedAds {
+		shouldRemove := false
+		for _, id := range disabledAdIds {
+			fmt.Println(ad.Id)
+			fmt.Println(id)
+			if ad.Id == id {
+				shouldRemove = true
+				break
+			}
+		}
+		if !shouldRemove {
+			remainingAds = append(remainingAds, ad)
+			fmt.Println(remainingAds)
+		}
+	}
+	allFetchedAds = remainingAds
 }
 
 /*
