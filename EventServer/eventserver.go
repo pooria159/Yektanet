@@ -6,12 +6,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"strings"
-
-	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
+	"time"
 )
 
 var JWT_ENCRYPTION_KEY = []byte("Golangers:Pooria-Mohammad-Roya-Sina") // Encryption key used to sign responses.
@@ -52,20 +52,28 @@ func NewEventServer() *EventServer {
 }
 
 var blacklistedUserAgents = []string{
-	"Python",
-	"curl",
-	"Postman",
-	"HttpClient",
-	"Java",
-	"Go-http-client",
-	"Wget",
-	// Add other known non-browser User-Agents as needed
+	"Python",                // Python scripts
+	"curl",                  // cURL
+	"Postman",               // Postman API client
+	"HttpClient",            // Generic HTTP client
+	"Java",                  // Java clients
+	"Go-http-client",        // Go's default HTTP client
+	"Wget",                  // Wget utility
+	"php",                   // PHP scripts
+	"Ruby",                  // Ruby scripts
+	"Node.js",               // Node.js scripts
+	"BinGet",                // BinGet utility
+	"libwww-perl",           // Perl library
+	"Microsoft URL Control", // Microsoft URL Control tool
+	"Peach",                 // Peach fuzzing tool
+	"pxyscand",              // Proxy scanner
+	"PycURL",                // Python binding to libcurl
+	"Python-urllib",         // Python urllib library
 }
 
 func UserAgentBlacklist() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userAgent := c.GetHeader("User-Agent")
-
 		if isBlacklisted(userAgent) {
 			// Block the request
 			c.JSON(http.StatusForbidden, gin.H{"message": "Blocked: Disallowed User-Agent"})
@@ -124,6 +132,20 @@ func (s *EventServer) handleClick(c *gin.Context) {
 	})
 	if err != nil || !parsedToken.Valid {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid click token"})
+	}
+	if claims, ok := parsedToken.Claims.(*Event); ok {
+		issuedAt := claims.IssuedAt
+		currentTime := time.Now().Unix()
+		secondsElapsed := currentTime - issuedAt
+
+		const tokenValidityThreshold = 10
+		if secondsElapsed < tokenValidityThreshold {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Click Time Invalid"})
+			return
+		}
+	} else {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid claims"})
+		return
 	}
 
 	if _, ok := s.clicks[event.UserID]; !ok {
