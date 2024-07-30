@@ -6,11 +6,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
-	"net/http"
-
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"log"
+	"net/http"
+	"strings"
+	"time"
 )
 
 var JWT_ENCRYPTION_KEY = []byte("Golangers:Pooria-Mohammad-Roya-Sina") // Encryption key used to sign responses.
@@ -50,6 +51,48 @@ func NewEventServer() *EventServer {
 	}
 }
 
+var blacklistedUserAgents = []string{
+	"Python",                // Python scripts
+	"curl",                  // cURL
+	"Postman",               // Postman API client
+	"HttpClient",            // Generic HTTP client
+	"Java",                  // Java clients
+	"Go-http-client",        // Go's default HTTP client
+	"Wget",                  // Wget utility
+	"php",                   // PHP scripts
+	"Ruby",                  // Ruby scripts
+	"Node.js",               // Node.js scripts
+	"BinGet",                // BinGet utility
+	"libwww-perl",           // Perl library
+	"Microsoft URL Control", // Microsoft URL Control tool
+	"Peach",                 // Peach fuzzing tool
+	"pxyscand",              // Proxy scanner
+	"PycURL",                // Python binding to libcurl
+	"Python-urllib",         // Python urllib library
+}
+
+func UserAgentBlacklist() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userAgent := c.GetHeader("User-Agent")
+		if isBlacklisted(userAgent) {
+			// Block the request
+			c.JSON(http.StatusForbidden, gin.H{"message": "Blocked: Disallowed User-Agent"})
+			c.Abort()
+		} else {
+			c.Next() // Continue to the next handler
+		}
+	}
+}
+
+func isBlacklisted(userAgent string) bool {
+	for _, ua := range blacklistedUserAgents {
+		if strings.Contains(userAgent, ua) {
+			return true
+		}
+	}
+	return false
+}
+
 // handleImpression handles the impression events
 func (s *EventServer) handleImpression(c *gin.Context) {
 	// Extract event information from url
@@ -58,7 +101,7 @@ func (s *EventServer) handleImpression(c *gin.Context) {
 	parsedToken, err := jwt.ParseWithClaims(eventInfoToken, &event, func(t *jwt.Token) (interface{}, error) {
 		return JWT_ENCRYPTION_KEY, nil
 	})
-	if err != nil || !parsedToken.Valid{
+	if err != nil || !parsedToken.Valid {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid impression token"})
 	}
 
@@ -87,10 +130,24 @@ func (s *EventServer) handleClick(c *gin.Context) {
 	parsedToken, err := jwt.ParseWithClaims(eventInfoToken, &event, func(t *jwt.Token) (interface{}, error) {
 		return JWT_ENCRYPTION_KEY, nil
 	})
-	if err != nil || !parsedToken.Valid{
+	if err != nil || !parsedToken.Valid {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid click token"})
 	}
-	
+	if claims, ok := parsedToken.Claims.(*Event); ok {
+		issuedAt := claims.IssuedAt
+		currentTime := time.Now().Unix()
+		secondsElapsed := currentTime - issuedAt
+
+		const tokenValidityThreshold = 10
+		if secondsElapsed < tokenValidityThreshold {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Click Time Invalid"})
+			return
+		}
+	} else {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid claims"})
+		return
+	}
+
 	if _, ok := s.clicks[event.UserID]; !ok {
 		value := Value{
 			AdID:        event.AdID,
@@ -149,6 +206,8 @@ func (s *EventServer) sendToKafka(event Event, eventType string) {
 // SetupRouter sets up the routes for the EventServer
 func (s *EventServer) SetupRouter() *gin.Engine {
 	router := gin.Default()
+	router.Use(UserAgentBlacklist())
+
 	router.GET("/impression/:info", s.handleImpression)
 	router.GET("/click/:info", s.handleClick)
 	return router
