@@ -39,6 +39,7 @@ func (ctrl AdController) GetAllActiveAds(c *gin.Context) {
 // insert a new function for breaking an ad
 func (ctrl AdController) BreakAd(advertiserID int) error {
 	ads, err := ctrl.Repo.FindAllAdsByAdvertiser(advertiserID)
+	log.Printf("Found %d ads for advertiser %d\n", len(ads), advertiserID)
 	if err != nil {
 		return err
 	}
@@ -47,13 +48,18 @@ func (ctrl AdController) BreakAd(advertiserID int) error {
 
 	for _, ad := range ads {
 		advertiser, err := ctrl.RepoAdvertiser.FindByID(uint(advertiserID))
+		log.Println(advertiserID, ad.BidValue, advertiser.Credit)
 		if err != nil {
 			return err
 		}
 
 		if ad.BidValue > advertiser.Credit {
 			adsToDisable = append(adsToDisable, ad.ID)
+			log.Printf("Ad ID %d is too expensive: %d > %d\n", ad.ID, ad.BidValue, advertiser.Credit)
+			log.Panicln(adsToDisable)
+			log.Println(ad.IsActive)
 			ad.IsActive = false
+			log.Println(ad.IsActive)
 			if err := ctrl.Repo.Update(&ad); err != nil {
 				log.Printf("Failed to disable ad ID %d: %v\n", ad.ID, err)
 			}
@@ -62,11 +68,14 @@ func (ctrl AdController) BreakAd(advertiserID int) error {
 
 	if len(adsToDisable) > 0 {
 		requestBody, err := json.Marshal(DisableAdsRequest{AdIDs: adsToDisable})
+		log.Println(requestBody)
 		if err != nil {
 			return err
 		}
 
 		resp, err := http.Post("https://adserver.lontra.tech/api/brake", "application/json", bytes.NewBuffer(requestBody))
+		log.Println(resp.StatusCode)
+		log.Println("SAGGGGGGGGGGGGGGGGGGG")
 		if err != nil || resp.StatusCode != http.StatusOK {
 			return fmt.Errorf("failed to notify Adserver: %v", err)
 		}
