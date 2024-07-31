@@ -56,7 +56,7 @@ func (ctrl AdController) BreakAd(advertiserID int) error {
 		if ad.BidValue > advertiser.Credit {
 			adsToDisable = append(adsToDisable, ad.ID)
 			log.Printf("Ad ID %d is too expensive: %d > %d\n", ad.ID, ad.BidValue, advertiser.Credit)
-			log.Panicln(adsToDisable)
+			log.Println(adsToDisable)
 			log.Println(ad.IsActive)
 			ad.IsActive = false
 			log.Println(ad.IsActive)
