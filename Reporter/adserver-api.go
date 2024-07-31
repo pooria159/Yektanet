@@ -55,23 +55,27 @@ func sendAdvertisersMeanCTR(c *gin.Context) {
 	db.Table("events").Select("advertiser_id, publisher_id, event_type, count(1) AS total").Where(timeCondition).Group("advertiser_id, publisher_id, event_type").Scan(&eventCounts)
 
 	var collaboration AdvertiserPublisherCollaboration
-	var statistics Statistics
 	for _, eventCount := range eventCounts {
+		var statistics Statistics
 		collaboration.AdvertiserID, _ = strconv.Atoi(eventCount.advertiser_id)
 		collaboration.PublisherID,  _ = strconv.Atoi(eventCount.publisher_id)
 		
 		statistics = advertiserEvaluation[collaboration]
-		if eventCount.event_type == "impression" {
+		switch eventCount.event_type {
+		case "impression":
 			statistics.Impressions = eventCount.total
-		} else {
+		case "click":
 			statistics.Clicks = eventCount.total
+		default:
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
 		}
 		advertiserEvaluation[collaboration] = statistics
 	}
 
-	/* Fix possible inconsistencies in data. These inconsistencies
-	 can happen, for example by latency in arrival of click and impression
-	 events. */
+	/* Compute CTR, together with fixing possible inconsistencies
+	 in data. These inconsistencies can happen, for example by
+	 latency in arrival of click and impression events. */
 	for apc := range advertiserEvaluation {
 		var statistics = advertiserEvaluation[apc]
 		if statistics.Impressions < statistics.Clicks {
@@ -80,11 +84,13 @@ func sendAdvertisersMeanCTR(c *gin.Context) {
 		if statistics.Impressions > 0 {
 			statistics.CTR = float64(statistics.Clicks) / float64(statistics.Impressions)
 		}
+		advertiserEvaluation[apc] = statistics
 	}
 	
-	/* Our statistics map is ready to be sent. */
+	/* Our statistics map is now ready to be sent. */
 	c.JSON(http.StatusOK, advertiserEvaluation)
 }
+
 
 /* Sends the per-publisher success statistics of each Ad. */
 func sendAdStatistics(c *gin.Context) {
@@ -109,11 +115,10 @@ func sendAdStatistics(c *gin.Context) {
 		}
 		adEvaluation[collaboration] = statistics
 	}
-	
-	/* Fix possible inconsistencies in data. These inconsistencies
-	 can happen, for example by latency in arrival of click and impression
-	 events. */
-	 for apc := range adEvaluation {
+	/* Compute CTR, together with fixing possible inconsistencies
+	 in data. These inconsistencies can happen, for example by
+	 latency in arrival of click and impression events. */
+	for apc := range adEvaluation {
 		var statistics = adEvaluation[apc]
 		if statistics.Impressions < statistics.Clicks {
 			statistics.Impressions = statistics.Clicks
@@ -121,6 +126,7 @@ func sendAdStatistics(c *gin.Context) {
 		if statistics.Impressions > 0 {
 			statistics.CTR = float64(statistics.Clicks) / float64(statistics.Impressions)
 		}
+		adEvaluation[apc] = statistics
 	}
 }
 
