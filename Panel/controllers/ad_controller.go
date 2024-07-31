@@ -8,12 +8,12 @@ import (
 	"go-ad-panel/models"
 	"go-ad-panel/repositories"
 	"gorm.io/gorm"
+	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
-	"log"
 )
 
 type AdController struct {
@@ -62,9 +62,9 @@ func (ctrl AdController) BreakAd(advertiserID int) error {
 			log.Println(ad.IsActive)
 			log.Println(ads)
 			log.Println(ad)
-			// if err := ctrl.Repo.Update(&ad); err != nil {
-			// 	log.Printf("Failed to disable ad ID %d: %v\n", ad.ID, err)
-			// }
+			if err := ctrl.Repo.Update(&ad); err != nil {
+				log.Printf("Failed to disable ad ID %d: %v\n", ad.ID, err)
+			}
 		}
 	}
 
@@ -162,16 +162,22 @@ type EventRequest struct {
 func (ctrl AdController) HandleEventAtomic(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.HTML(http.StatusBadRequest, "advertiser.html", gin.H{"notfounderror": "Invalid ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
+	ad, err := ctrl.Repo.FindByID(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+	advertiser_id := ad.AdvertiserID
 	err = ctrl.Repo.WithTransaction(func(tx *gorm.DB) error {
-		ad, err := ctrl.Repo.FindByIDTx(tx, id)
-		if err != nil {
-			return err
-		}
-		advertiser_id := ad.AdvertiserID
+		// ad, err := ctrl.Repo.FindByIDTx(tx, id)
+		// if err != nil {
+		// 	return err
+		// }
+		// advertiser_id := ad.AdvertiserID
 
 		var eventRequest EventRequest
 		if err := c.ShouldBindJSON(&eventRequest); err != nil {
@@ -209,12 +215,18 @@ func (ctrl AdController) HandleEventAtomic(c *gin.Context) {
 			}
 		}
 
-		if err := ctrl.BreakAd(advertiser_id); err != nil {
-			return err
-		}
+		// if err := ctrl.BreakAd(advertiser_id); err != nil {
+		// 	return err
+		// }
 
 		return nil
 	})
+
+	if err := ctrl.BreakAd(advertiser_id); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Braking failed"})
+		return 
+	}
+
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process event"})
