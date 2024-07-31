@@ -63,3 +63,12 @@ func (t AdvertiserRepository) UpdateTx(tx *gorm.DB, advertiser *models.Advertise
 func (t AdvertiserRepository) DecreaseCredit(tx *gorm.DB, advertiser *models.Advertiser, bid int) error {
 	return tx.Model(advertiser).Update("Credit", gorm.Expr("Credit - ?", bid)).Error
 }
+
+func (t AdvertiserRepository) GetAdvertiserCredit(id uint) (int, error) {
+	var advertiser models.Advertiser
+	result := t.Db.Select("Credit").First(&advertiser, id)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	return advertiser.Credit, nil
+}
