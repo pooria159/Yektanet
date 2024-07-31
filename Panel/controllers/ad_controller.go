@@ -146,7 +146,7 @@ func (ctrl AdController) ToggleActivation(c *gin.Context) {
 	}
 
 	if advertiserCredit >= ad.BidValue {
-		ad.IsActive = true
+		ad.IsActive = !ad.IsActive
 	} else {
 		ad.IsActive = false
 	}
