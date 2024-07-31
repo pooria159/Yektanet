@@ -1,4 +1,4 @@
-<!-- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -37,6 +37,12 @@
       padding: 5px;
       border: 1px solid #ddd;
       text-align: left;
+    }
+    #detailsTable th,
+    #detailsTable td {
+      padding: 5px;
+      border: 1px solid #ddd;
+      text-align: center;
     }
     canvas {
       width: 100% !important;
@@ -78,7 +84,7 @@
     </section>
     <section>
       <h2>Details</h2>
-      <table>
+      <table id="detailsTable">
         <tr>
           <th>Date</th>
           <th>Impressions</th>
@@ -135,29 +141,6 @@
       document.getElementById('performanceChart'),
       config
     );
-
-    document.addEventListener("DOMContentLoaded", () => {
-      const errorMessage = "{{.error}}";
-      const successMessage = "{{.success}}";
-
-      if (errorMessage) {
-        Toastify({
-          text: errorMessage,
-          duration: 3000,
-          close: false,
-          gravity: "top",
-          position: "left",
-          backgroundColor: "rgba(220, 53, 69, 0.7)",
-          style: {
-            borderRadius: "5px",
-            fontSize: "16px"
-          }
-        }).showToast();
-        setTimeout(function () {
-            window.location.href = "/advertisers/{{.ad.AdvertiserID}}";
-          }, 1500);
-      }
-    });
   </script>
 </body>
-</html> -->
+</html>
