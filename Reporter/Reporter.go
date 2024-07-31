@@ -64,7 +64,7 @@ func processEvent(eventData []byte) {
 		return
 	}
 	// Log successful insertion
-	log.Printf("Inserted event into DB: %s, AdID: %d, EventType: %s", event.Time, event.AdID, event.EventType)
+	log.Printf("Inserted event into DB: %v, AdID: %v, EventType: %v", event.Time, event.AdID, event.EventType)
 
 }
 
@@ -102,5 +102,8 @@ func main() {
 	}
 
 	reader := setupKafkaReader()
-	consumeEvents(reader)
+	/* Run the two main workers:
+	 event-consumer and api-handler. */
+	go consumeEvents(reader)
+	setupAndRunAPIRouter()
 }
