@@ -235,3 +235,20 @@ func (ctrl AdController) HandleEventAtomic(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "Event successfully processed"})
 	}
 }
+
+
+func (ctrl AdController) GetAd(c *gin.Context) {
+	adID, err := strconv.Atoi(c.Param("adID"))
+	if err != nil || adID <= 0 {
+		c.HTML(http.StatusBadRequest, "ad.html", gin.H{"error": "Invalid ad ID"})
+		return
+	}
+
+	ad, err := ctrl.Repo.FindByID(adID)
+	if err != nil {
+		c.HTML(http.StatusNotFound, "ad.html", gin.H{"error": "Ad not found" , "ad": ad})
+		return
+	}
+
+	c.HTML(http.StatusOK, "ad.html", gin.H{"ad": ad})
+}
