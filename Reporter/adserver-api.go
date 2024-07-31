@@ -9,8 +9,15 @@ import (
 
 const REPORTER_PORT = 9999
 
-type AdPublisherEventCount struct {
+type AdvertiserPublisherEventCount struct {
 	advertiser_id	string
+	publisher_id	string
+	event_type		string
+	total			int
+}
+
+type AdPublisherEventCount struct {
+	ad_id			string
 	publisher_id	string
 	event_type		string
 	total			int
@@ -35,17 +42,16 @@ type Statistics struct {
 	CTR         float64
 }
 
-// Maps collaborations to their emprical success statistics.
+// Maps advertiser-publisher collaborations to their emprical success statistics.
 var advertiserEvaluation map[AdvertiserPublisherCollaboration]Statistics
+
+// Map 
+var adEvaluation map[AdPublisherCollaboration]Statistics
 
 /* Sends the mean ctr of each advertiser's ads, per publisher. */
 func sendAdvertisersMeanCTR(c *gin.Context) {
 	var timeCondition = "time > now() - INTERVAL '1 hour'"
-	/*db.Table("events").Distinct("advertiser_id").Where(timeCondition).Scan(&allAdvertisers)
-	db.Table("events").Distinct("publisher_id").Where(timeCondition).Scan(&allPublishers)
-	db.Table("events").Distinct("ad_id").Where(timeCondition).Scan(&allAds)*/
-	
-	var eventCounts []AdPublisherEventCount
+	var eventCounts []AdvertiserPublisherEventCount
 	db.Table("events").Select("advertiser_id, publisher_id, event_type, count(1) AS total").Where(timeCondition).Group("advertiser_id, publisher_id, event_type").Scan(&eventCounts)
 
 	var collaboration AdvertiserPublisherCollaboration
@@ -67,7 +73,7 @@ func sendAdvertisersMeanCTR(c *gin.Context) {
 	 can happen, for example by latency in arrival of click and impression
 	 events. */
 	for apc := range advertiserEvaluation {
-		statistics = advertiserEvaluation[apc]
+		var statistics = advertiserEvaluation[apc]
 		if statistics.Impressions < statistics.Clicks {
 			statistics.Impressions = statistics.Clicks
 		}
@@ -80,9 +86,42 @@ func sendAdvertisersMeanCTR(c *gin.Context) {
 	c.JSON(http.StatusOK, advertiserEvaluation)
 }
 
+/* Sends the per-publisher success statistics of each Ad. */
+func sendAdStatistics(c *gin.Context) {
+	var timeCondition = "time > now() - INTERVAL '1 hour'"
+	
+	var eventCounts []AdPublisherEventCount
+	db.Table("events").Select("ad_id, publisher_id, event_type, count(1) AS total").Where(timeCondition).Group("ad_id, publisher_id, event_type").Scan(&eventCounts)
 
-func sendAdStatistics() {
-	// TODO
+	var collaboration AdPublisherCollaboration
+	for _, eventCount := range eventCounts {
+		collaboration.AdID, _ = strconv.Atoi(eventCount.ad_id)
+		collaboration.PublisherID, _ = strconv.Atoi(eventCount.publisher_id)
+
+		var statistics = adEvaluation[collaboration]
+		switch eventCount.event_type {
+		case "impression":
+			statistics.Impressions = eventCount.total
+		case "click":
+			statistics.Clicks = eventCount.total
+		default:
+			c.AbortWithStatus(http.StatusInternalServerError)
+		}
+		adEvaluation[collaboration] = statistics
+	}
+	
+	/* Fix possible inconsistencies in data. These inconsistencies
+	 can happen, for example by latency in arrival of click and impression
+	 events. */
+	 for apc := range adEvaluation {
+		var statistics = adEvaluation[apc]
+		if statistics.Impressions < statistics.Clicks {
+			statistics.Impressions = statistics.Clicks
+		}
+		if statistics.Impressions > 0 {
+			statistics.CTR = float64(statistics.Clicks) / float64(statistics.Impressions)
+		}
+	}
 }
 
 /* Runs the router that will route api calls from ad server to
