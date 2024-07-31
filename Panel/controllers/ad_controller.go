@@ -60,6 +60,8 @@ func (ctrl AdController) BreakAd(advertiserID int) error {
 			log.Println(ad.IsActive)
 			ad.IsActive = false
 			log.Println(ad.IsActive)
+			log.Println(ads)
+			log.Println(ad)
 			if err := ctrl.Repo.Update(&ad); err != nil {
 				log.Printf("Failed to disable ad ID %d: %v\n", ad.ID, err)
 			}
