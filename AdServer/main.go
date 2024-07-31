@@ -118,6 +118,7 @@ func fetchAdsOnce() error {
 
 
 func RemoveDisabledAds(disabledAdIds []int) {
+	log.Println(disabledAdIds)
 	remainingAds := []FetchedAd{}
 	for _, ad := range allFetchedAds {
 		shouldRemove := false
@@ -132,6 +133,7 @@ func RemoveDisabledAds(disabledAdIds []int) {
 		}
 	}
 	allFetchedAds = remainingAds
+	log.Println(allFetchedAds)
 }
 
 /*

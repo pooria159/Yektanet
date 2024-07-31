@@ -75,6 +75,7 @@ func (ctrl AdController) BreakAd(advertiserID int) error {
 			return err
 		}
 
+		log.Println(bytes.NewBuffer(requestBody))
 		resp, err := http.Post("https://adserver.lontra.tech/api/brake", "application/json", bytes.NewBuffer(requestBody))
 		log.Println(resp.StatusCode)
 		log.Println("SAGGGGGGGGGGGGGGGGGGG")
