@@ -238,7 +238,7 @@ func (ctrl AdController) HandleEventAtomic(c *gin.Context) {
 
 
 func (ctrl AdController) GetAd(c *gin.Context) {
-	adID, err := strconv.Atoi(c.Param("adID"))
+	adID, err := strconv.Atoi(c.Param("id"))
 	if err != nil || adID <= 0 {
 		c.HTML(http.StatusBadRequest, "ad.html", gin.H{"error": "Invalid ad ID"})
 		return
