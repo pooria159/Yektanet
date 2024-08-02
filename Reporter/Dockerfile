@@ -1,16 +1,4 @@
-FROM ubuntu:18.04
-
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    software-properties-common \
-    git \
-    curl \
-    wget \
-    unzip \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN add-apt-repository ppa:longsleep/golang-backports
-RUN apt-get update && apt-get install -y golang-go
+FROM golang:1.22.5-bullseye
 
 WORKDIR /app
 
@@ -22,4 +10,4 @@ COPY . .
 
 RUN go mod tidy
 
-RUN go build -o .
+RUN CGO_ENABLED=0 go build -o .
