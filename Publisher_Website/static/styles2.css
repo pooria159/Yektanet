@@ -5,14 +5,14 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #e5f5e0; /* Light green background color */
+    background-color: #e5f5e0;
     font-family: Arial, sans-serif;
 }
 
 .container {
     text-align: center;
-    background-color: #45a049; /* Main green color */
-    color: #fff; /* White color for text */
+    background-color: #45a049;
+    color: #fff;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -31,8 +31,8 @@ p {
     display: inline-block;
     margin-top: 20px;
     padding: 10px 20px;
-    color: #45a049; /* Main green color */
-    background-color: #fff; /* Background color of the button */
+    color: #45a049;
+    background-color: #fff;
     border: none;
     border-radius: 5px;
     text-decoration: none;
@@ -41,5 +41,5 @@ p {
 }
 
 .btn:hover {
-    background-color: #d4e8d2; /* Light green color on hover */
+    background-color: #d4e8d2;
 }
