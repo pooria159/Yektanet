@@ -145,7 +145,7 @@ func main() {
 	
 	// Set up and start the cron job
 	c := cron.New()
-	_, err = c.AddFunc("@hourly", aggregateData)
+	err = c.AddFunc("@hourly", aggregateData)
 	if err != nil {
 		log.Fatalf("failed to add cron job: %v", err)
 	}
