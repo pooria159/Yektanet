@@ -86,25 +86,6 @@
       </select>
       <canvas id="performanceChart"></canvas>
     </section>
-    <section>
-      <h2>Details</h2>
-      <table id="detailsTable">
-        <tr>
-          <th>Date</th>
-          <th>Impressions</th>
-          <th>Clicks</th>
-          <th>CTR</th>
-        </tr>
-        {{range .report}}
-        <tr>
-          <td>{{.Date}}</td>
-          <td>{{.Impressions}}</td>
-          <td>{{.Clicks}}</td>
-          <td>{{printf "%.2f" .CTR}}%</td>
-        </tr>
-        {{end}}
-      </table>
-    </section>
   </div>
 
   <script>

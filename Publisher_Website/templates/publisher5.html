@@ -109,40 +109,10 @@
 
         <div class="w3-third w3-center">
           <div class="ad-box" id="adBox">
-            Advertisements will be placed here
+            <script src="https://panel.lontra.tech/static/fetchAd.js" id="5"></script>
           </div>
         </div>
       </div>
     </div>
-
-    <script>
-      // Simulate script adding ad content
-      document.addEventListener("DOMContentLoaded", function() {
-        const adBox = document.getElementById('adBox');
-        adBox.innerHTML = `
-          <img src="https://via.placeholder.com/300x200" alt="Ad Image">
-          <h3>Ad Title</h3>
-          <a href="#" class="click-here" onclick="sendPostRequest(event)">Click here</a>
-        `;
-      });
-
-      function sendPostRequest(event) {
-        event.preventDefault();
-        fetch('https://example.com/api/click', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ ad: 'Ad Title', clickedAt: new Date().toISOString() })
-        })
-        .then(response => response.json())
-        .then(data => {
-          console.log('Success:', data);
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-        });
-      }
-    </script>
   </body>
 </html>

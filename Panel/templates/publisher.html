@@ -175,6 +175,10 @@
       </section>
       <section class="chart-container">
         <h2>Reports Over Time</h2>
+        <select id="timeRange" onchange="updateChart()">
+          <option value="day">Last Day</option>
+          <option value="week">Last Week</option>
+        </select>
         <canvas id="myChart" width="400" height="200"></canvas>
       </section>
     </div>
@@ -301,53 +305,110 @@
         document.getElementById("amount").value = value;
       }
 
-      document.addEventListener("DOMContentLoaded", function () {
-        const ctx = document.getElementById("myChart").getContext("2d");
-        const myChart = new Chart(ctx, {
-          type: "line",
-          data: {
-            datasets: [
-              {
-                label: "Revenue",
-                data: [
-                  { x: "2024-07-01", y: 200 },
-                  { x: "2024-07-02", y: 250 },
-                  { x: "2024-07-03", y: 300 },
-                  { x: "2024-07-04", y: 400 },
-                ],
-                backgroundColor: "rgba(255, 99, 132, 0.5)",
-                borderColor: "rgba(255, 99, 132, 1)",
-                borderWidth: 2,
-                pointRadius: 8,
-              },
-              {
-                label: "Impressions",
-                data: [
-                  { x: "2024-07-01", y: 1500 },
-                  { x: "2024-07-02", y: 1800 },
-                  { x: "2024-07-03", y: 2200 },
-                  { x: "2024-07-04", y: 1000 },
-                ],
-                backgroundColor: "rgba(54, 162, 235, 0.5)",
-                borderColor: "rgba(54, 162, 235, 1)",
-                borderWidth: 2,
-                pointRadius: 8,
-              },
-              {
-                label: "Clicks",
-                data: [
-                  { x: "2024-07-01", y: 75 },
-                  { x: "2024-07-02", y: 50 },
-                  { x: "2024-07-03", y: 60 },
-                  { x: "2024-07-04", y: 30 },
-                ],
-                backgroundColor: "rgba(75, 192, 192, 0.5)",
-                borderColor: "rgba(75, 192, 192, 1)",
-                borderWidth: 2,
-                pointRadius: 8,
-              },
+      let chart;
+      const dayData = {
+        datasets: [
+          {
+            label: "Revenue",
+            data: [
+              { x: "2024-07-01", y: 200 },
+              { x: "2024-07-02", y: 250 },
+              { x: "2024-07-03", y: 300 },
+              { x: "2024-07-04", y: 400 },
             ],
+            backgroundColor: "rgba(255, 99, 132, 0.5)",
+            borderColor: "rgba(255, 99, 132, 1)",
+            borderWidth: 2,
+            pointRadius: 8,
           },
+          {
+            label: "Impressions",
+            data: [
+              { x: "2024-07-01", y: 1500 },
+              { x: "2024-07-02", y: 1800 },
+              { x: "2024-07-03", y: 2200 },
+              { x: "2024-07-04", y: 1000 },
+            ],
+            backgroundColor: "rgba(54, 162, 235, 0.5)",
+            borderColor: "rgba(54, 162, 235, 1)",
+            borderWidth: 2,
+            pointRadius: 8,
+          },
+          {
+            label: "Clicks",
+            data: [
+              { x: "2024-07-01", y: 75 },
+              { x: "2024-07-02", y: 50 },
+              { x: "2024-07-03", y: 60 },
+              { x: "2024-07-04", y: 30 },
+            ],
+            backgroundColor: "rgba(75, 192, 192, 0.5)",
+            borderColor: "rgba(75, 192, 192, 1)",
+            borderWidth: 2,
+            pointRadius: 8,
+          },
+        ],
+      };
+
+      const weekData = {
+        datasets: [
+          {
+            label: "Revenue",
+            data: [
+              { x: "2024-06-25", y: 1200 },
+              { x: "2024-06-26", y: 1350 },
+              { x: "2024-06-27", y: 1400 },
+              { x: "2024-06-28", y: 1550 },
+              { x: "2024-06-29", y: 1600 },
+              { x: "2024-06-30", y: 1650 },
+              { x: "2024-07-01", y: 2000 },
+            ],
+            backgroundColor: "rgba(255, 99, 132, 0.5)",
+            borderColor: "rgba(255, 99, 132, 1)",
+            borderWidth: 2,
+            pointRadius: 8,
+          },
+          {
+            label: "Impressions",
+            data: [
+              { x: "2024-06-25", y: 12000 },
+              { x: "2024-06-26", y: 12500 },
+              { x: "2024-06-27", y: 13000 },
+              { x: "2024-06-28", y: 14500 },
+              { x: "2024-06-29", y: 15000 },
+              { x: "2024-06-30", y: 15500 },
+              { x: "2024-07-01", y: 16000 },
+            ],
+            backgroundColor: "rgba(54, 162, 235, 0.5)",
+            borderColor: "rgba(54, 162, 235, 1)",
+            borderWidth: 2,
+            pointRadius: 8,
+          },
+          {
+            label: "Clicks",
+            data: [
+              { x: "2024-06-25", y: 575 },
+              { x: "2024-06-26", y: 600 },
+              { x: "2024-06-27", y: 625 },
+              { x: "2024-06-28", y: 650 },
+              { x: "2024-06-29", y: 675 },
+              { x: "2024-06-30", y: 700 },
+              { x: "2024-07-01", y: 725 },
+            ],
+            backgroundColor: "rgba(75, 192, 192, 0.5)",
+            borderColor: "rgba(75, 192, 192, 1)",
+            borderWidth: 2,
+            pointRadius: 8,
+          },
+        ],
+      };
+
+      function createChart(data) {
+        const ctx = document.getElementById("myChart").getContext("2d");
+        if (chart) chart.destroy();
+        chart = new Chart(ctx, {
+          type: "line",
+          data: data,
           options: {
             scales: {
               x: {
@@ -369,6 +430,19 @@
             },
           },
         });
+      }
+
+      function updateChart() {
+        const timeRange = document.getElementById("timeRange").value;
+        if (timeRange === "day") {
+          createChart(dayData);
+        } else if (timeRange === "week") {
+          createChart(weekData);
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        createChart(dayData);
       });
     </script>
   </body>
