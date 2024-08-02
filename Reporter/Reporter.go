@@ -6,10 +6,10 @@ import (
 	"log"
 	"time"
 
+	"github.com/robfig/cron"
+	"github.com/segmentio/kafka-go"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-
-	"github.com/segmentio/kafka-go"
 )
 
 var db *gorm.DB
@@ -22,6 +22,15 @@ type Event struct {
 	PublisherID  string    `json:"publisher_id" gorm:"column:publisher_id"`
 	Credit       int       `json:"Credit" gorm:"column:credit"`
 	Time         time.Time `json:"Time" gorm:"column:time"`
+}
+
+type AggregatedData struct {
+	gorm.Model
+	AdID        int       `gorm:"column:ad_id"`
+	Clicks      int       `gorm:"column:clicks"`
+	Impressions int       `gorm:"column:impressions"`
+	Credit      int       `gorm:"column:credit"`
+	Time        time.Time `gorm:"column:time"`
 }
 
 func setupKafkaReader() *kafka.Reader {
@@ -63,7 +72,6 @@ func processEvent(eventData []byte) {
 		log.Printf("could not insert event into DB: %v", err)
 		return
 	}
-	// Log successful insertion
 	log.Printf("Inserted event into DB: %s, AdID: %d, EventType: %s", event.Time, event.AdID, event.EventType)
 
 }
@@ -87,6 +95,38 @@ func insertEventIntoDB(event *Event) error {
 
 }
 
+func aggregateData() {
+	var results []struct {
+		AdID        int
+		Clicks      int
+		Impressions int
+		Credit      int
+		Time        time.Time
+	}
+	// Query to aggregate data using GORM
+	db.Table("events").
+		Select("ad_id, " +
+			"SUM(CASE WHEN event_type = 'click' THEN 1 ELSE 0 END) as clicks, " +
+			"SUM(CASE WHEN event_type = 'impression' THEN 1 ELSE 0 END) as impressions, " +
+			"SUM(credit) as credit, " +
+			"DATE_TRUNC('hour', time) as time").
+		Group("ad_id, DATE_TRUNC('hour', time)").
+		Order("time").
+		Scan(&results)
+
+	// Insert aggregated data into the new table
+	for _, result := range results {
+		aggregatedData := AggregatedData{
+			AdID:        result.AdID,
+			Clicks:      result.Clicks,
+			Impressions: result.Impressions,
+			Credit:      result.Credit,
+			Time:        result.Time,
+		}
+		db.Create(&aggregatedData)
+	}
+}
+
 func main() {
 	// GORM: Initialize the database connection
 	var err error
@@ -94,13 +134,24 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to connect database: %v", err)
 	}
-
 	// GORM: Auto Migrate the schema
 	err = db.AutoMigrate(&Event{})
 	if err != nil {
 		log.Fatalf("failed to auto migrate: %v", err)
 	}
 
+	// Set up Kafka reader
 	reader := setupKafkaReader()
 	consumeEvents(reader)
+
+	// Set up and start the cron job
+	c := cron.New()
+	_, err = c.AddFunc("@hourly", aggregateData)
+	if err != nil {
+		log.Fatalf("failed to add cron job: %v", err)
+	}
+	c.Start()
+
+	select {}
+
 }
