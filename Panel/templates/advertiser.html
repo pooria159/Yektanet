@@ -145,6 +145,7 @@
               <th>Impressions</th>
               <th>Clicks</th>
               <th>CTR</th>
+              <th>Engaged Credit</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -164,6 +165,7 @@
               <td>{{.Impressions}}</td>
               <td>{{.Clicks}}</td>
               <td class="ctr"></td>
+              <td>{{.EngagedCredit}}</td>
               <td>
                 <button
                   class="{{if .IsActive}}enabled{{else}}disabled{{end}}"
