@@ -193,7 +193,7 @@ func (s *EventServer) sendToKafka(event Event, eventType string) {
 	}
 
 	msg := kafka.Message{
-		Key:   []byte(event.AdID), // Optional: Use AdID as the key
+		Key:   []byte(event.AdID),
 		Value: eventData,
 	}
 
