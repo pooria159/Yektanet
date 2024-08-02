@@ -3,6 +3,9 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
+	"github.com/zsais/go-gin-prometheus"
 	"io"
 	"log"
 	"math/rand"
@@ -10,21 +13,18 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
 )
 
 /* Constants Configuring Functionality of the Server */
 
 var TEST_RAW_RESPONSE = []byte(`[{"Id":1,"Title":"12","ImagePath":"uploads\\treesample.png","BidValue":12,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}},{"Id":6,"Title":"144","ImagePath":"media\\treesample.png","BidValue":144,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}},{"Id":11,"Title":"test","ImagePath":"media/swoled_20240722144230_2.jpg","BidValue":12,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}},{"Id":10,"Title":"first","ImagePath":"media/s.jpg","BidValue":100,"IsActive":true,"Clicks":0,"Impressions":0,"AdvertiserID":2,"Advertiser":{"Id":0,"Name":"","Credit":0}}]`)
 
-const ADSERVER_PORT = 9090	// The port on which AdServer listens.
-const FETCH_PERIOD = 60    	// How many seconds to wait between fetching
-							// Ads from Panel.
+const ADSERVER_PORT = 9090 // The port on which AdServer listens.
+const FETCH_PERIOD = 60    // How many seconds to wait between fetching
+// Ads from Panel.
 const FETCH_URL = "https://panel.lontra.tech/api/v1/ads/active/" // Address from which ads are to be fetched.
 const EVENT_URL = "https://eventserver.lontra.tech/"             // Address to which ads are to be sent.
-const API_TEMPLATE = "/api/ads/"                                 // URL that will be routed to the getNewAd handler.
+const API_TEMPLATE = "/api/ads"                                  // URL that will be routed to the getNewAd handler.
 const PUBLISHER_ID_RECV_PARAM = "publisherID"                    // Name of the parameter in URL received from publisher that specifies publisher's id.
 
 const PRINT_RESPONSE = true                                            // Whether to print allAds after it is fetched.
@@ -61,6 +61,9 @@ type ResponseInfo struct {
 	ImpressionLink string `json:"ImpressionLink"`
 }
 
+type DisableAdsRequest struct {
+	AdIDs []int `json:"ad_ids"`
+}
 
 /* Global Objects */
 
@@ -112,6 +115,25 @@ func fetchAdsOnce() error {
 	return nil
 }
 
+func RemoveDisabledAds(disabledAdIds []int) {
+	log.Println(disabledAdIds)
+	remainingAds := []FetchedAd{}
+	for _, ad := range allFetchedAds {
+		shouldRemove := false
+		for _, id := range disabledAdIds {
+			if ad.Id == id {
+				shouldRemove = true
+				break
+			}
+		}
+		if !shouldRemove {
+			remainingAds = append(remainingAds, ad)
+		}
+	}
+	allFetchedAds = remainingAds
+	log.Println(allFetchedAds)
+}
+
 /*
 In an infinite loop, calls fetchAdsOnce and
 checks if any error has occured. If so, logs the error
@@ -149,14 +171,20 @@ func selectAd() FetchedAd {
 	return bestAd
 }
 
-/* Returns a uniformly random int
- in the interval [a, b). */
+/*
+	Returns a uniformly random int
+
+in the interval [a, b).
+*/
 func randomInRange(a, b int) int {
 	return a + rand.Intn(b-a)
 }
 
-/* Generate a random token of given size.
- ASCII code of each character is between 'a' and 'z' (inclusive). */
+/*
+	Generate a random token of given size.
+
+ASCII code of each character is between 'a' and 'z' (inclusive).
+*/
 func generateRandomToken(size int) string {
 	var builder strings.Builder
 	builder.Reset()
@@ -169,10 +197,13 @@ func generateRandomToken(size int) string {
 	return builder.String()
 }
 
-/* Generates raw event link and signs it using the 
- private key of AdServer. */
+/*
+	Generates raw event link and signs it using the
+
+private key of AdServer.
+*/
 func generateSignedEventInfo(action string, selectedAd FetchedAd, requestingPublisherId int) (string, error) {
-	var eventInfo EventInfo 
+	var eventInfo EventInfo
 	eventInfo.AdID = strconv.Itoa(selectedAd.Id)
 	eventInfo.PublisherID = strconv.Itoa(requestingPublisherId)
 	eventInfo.UserID = generateRandomToken(USER_TOKEN_SIZE)
@@ -187,28 +218,34 @@ func generateSignedEventInfo(action string, selectedAd FetchedAd, requestingPubl
 	return EVENT_URL + action + "/" + signedInfo, nil
 }
 
-/* Makes a Response instance, puts info that is to be sent 
- in it and returns it. */
+/*
+	Makes a Response instance, puts info that is to be sent
+
+in it and returns it.
+*/
 func makeResopnse(selectedAd FetchedAd, requestingPublisherId int) (ResponseInfo, error) {
 	var response ResponseInfo
 	var err error
 
-	response.Title					= selectedAd.Title
-	response.ImagePath				= selectedAd.ImageSource
-	response.ClickLink, err			= generateSignedEventInfo("click", selectedAd, requestingPublisherId)	
+	response.Title = selectedAd.Title
+	response.ImagePath = selectedAd.ImageSource
+	response.ClickLink, err = generateSignedEventInfo("click", selectedAd, requestingPublisherId)
 	if err != nil {
 		return response, err
 	}
-	response.ImpressionLink, err	= generateSignedEventInfo("impression", selectedAd, requestingPublisherId)
+	response.ImpressionLink, err = generateSignedEventInfo("impression", selectedAd, requestingPublisherId)
 	if err != nil {
 		return response, err
 	}
 	return response, nil
 }
 
-/* Signs the information Event Server needed
- with AdServer's internal private key, so that
- it will be shown that it is really generated by AdServer. */
+/*
+	Signs the information Event Server needed
+
+with AdServer's internal private key, so that
+it will be shown that it is really generated by AdServer.
+*/
 func signEvent(event *EventInfo) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, event)
 	signedTokenString, err := token.SignedString(JWT_ENCRYPTION_KEY)
@@ -218,18 +255,47 @@ func signEvent(event *EventInfo) (string, error) {
 	return signedTokenString, nil
 }
 
-/* Handels GET requests from publishers requesting
- for a new ad. */
+/*
+	Handels GET requests from publishers requesting
+
+for a new ad.
+*/
 func getNewAd(c *gin.Context) {
 	selectedAd := selectAd()
 	publisherId, _ := strconv.Atoi(c.Query(PUBLISHER_ID_RECV_PARAM))
 	response, err := makeResopnse(selectedAd, publisherId)
-	
+
 	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 	}
 
 	c.JSON(http.StatusOK, response)
+}
+
+func brake(c *gin.Context) {
+	var disableRequest DisableAdsRequest
+	if err := c.ShouldBindJSON(&disableRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		return
+	}
+
+	RemoveDisabledAds(disableRequest.AdIDs)
+	c.JSON(http.StatusOK, gin.H{"message": "Ads successfully disabled"})
+}
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	}
 }
 
 func main() {
@@ -241,7 +307,10 @@ func main() {
 	   and query-responser. */
 	go periodicallyFetchAds()
 	router := gin.Default()
+	p := ginprometheus.NewPrometheus("adserver")
+	p.Use(router)
+	router.Use(CORSMiddleware())
 	router.GET(API_TEMPLATE, getNewAd)
-
+	router.POST("/api/brake", brake)
 	router.Run(":" + strconv.Itoa(ADSERVER_PORT))
 }

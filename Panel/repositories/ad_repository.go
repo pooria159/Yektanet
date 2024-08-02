@@ -24,8 +24,15 @@ func (t AdRepository) UpdateTx(tx *gorm.DB, ad *models.Ad) error {
 func (t AdRepository) IncrementImpressionsTx(tx *gorm.DB, ad *models.Ad) error {
 	return tx.Model(ad).Update("Impressions", gorm.Expr("Impressions + ?", 1)).Error
 }
+
+//	func (t AdRepository) IncrementClicksTx(tx *gorm.DB, ad *models.Ad) error {
+//		return tx.Model(ad).Update("Clicks", gorm.Expr("Clicks + ?", 1)).Error
+//	}
 func (t AdRepository) IncrementClicksTx(tx *gorm.DB, ad *models.Ad) error {
-	return tx.Model(ad).Update("Clicks", gorm.Expr("Clicks + ?", 1)).Error
+	return tx.Model(ad).Updates(map[string]interface{}{
+		"Clicks":        gorm.Expr("Clicks + ?", 1),
+		"EngagedCredit": gorm.Expr("engaged_credit + ?", ad.BidValue),
+	}).Error
 }
 
 func (t AdRepository) Save(ad models.Ad) error {

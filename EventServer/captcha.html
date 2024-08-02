@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CAPTCHA Verification</title>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+<form action="/verify-captcha" method="POST">
+    <input type="hidden" name="info" value="{{.eventInfoToken}}">
+    <div class="g-recaptcha" data-sitekey="6LfwfxsqAAAAAEINPOu_YAJmFgRyGLjlV-4B6xN8"></div>
+    <br/>
+    <input type="submit" value="Submit">
+</form>
+</body>
+</html>

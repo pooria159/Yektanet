@@ -9,15 +9,13 @@
     fetch(`https://adserver.lontra.tech/api/ads?publisherID=${publisherID}`)
       .then(response => response.json())
       .then(data => {
-        console.log("Received data:", JSON.stringify(data, null, 2));
         if (data) {
           const ad = data;
           const adContent = `
-                <img src="https://panel.lontra.tech/${ad.ImagePath}" alt="${ad.Title}" style="width:100%;" />
+                <img src="https://panel.lontra.tech/${ad.ImagePath}" alt="${ad.Title}" style="width:100%; height: 100%;" />
                 <h3>${ad.Title}</h3>
-                <a target="_blank" class="click-here" href="${ad.ClickLink}">Click here</a>
+                <a class="click-here" href="${ad.ClickLink}" target="_blank" rel="noopener noreferrer">Click here</a>
               `;
-              // delete href
           adContainer.innerHTML = adContent;
           const observer = new IntersectionObserver((entries) => {
             if (entries[0].isIntersecting) {

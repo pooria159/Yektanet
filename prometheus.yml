@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['prometheus:9090']
+  
+  - job_name: 'adserver'
+    static_configs:
+      - targets: ['adserver:9090']
+  
+  - job_name: 'eventserver'
+    static_configs:
+      - targets: ['eventserver:8081']
+  
+  - job_name: 'panel'
+    static_configs:
+      - targets: ['panel:8082']

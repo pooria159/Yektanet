@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ad Report</title>
+  <style>
+    body {
+      background-image: url("/static/image_back.jpg");
+      background-size: cover;
+      background-position: center;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 15px;
+      background-color: #b8c2ac;
+      border-radius: 20px;
+    }
+    header h1 {
+      color: green;
+      text-align: center;
+    }
+    section {
+      margin-bottom: 15px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      background-color: #f9f9f9;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 5px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    #detailsTable th,
+    #detailsTable td {
+      padding: 5px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Ad Report</h1>
+    </header>
+    <section>
+      <h2>Ad Information</h2>
+      <table>
+        <tr>
+          <th>Title</th>
+          <td>{{.ad.Title}}</td>
+        </tr>
+        <tr>
+          <th>Link</th>
+          <td>{{.ad.RedirectLink}}</td>
+        </tr>
+        <tr>
+          <th>Bid</th>
+          <td>{{.ad.BidValue}}</td>
+        </tr>
+        <tr>
+          <th>Total Spent</th>
+          <td>${{.TotalSpent}}</td>
+        </tr>
+      </table>
+    </section>
+    <section>
+      <h2>Performance Chart</h2>
+      <canvas id="performanceChart"></canvas>
+    </section>
+    <section>
+      <h2>Details</h2>
+      <table id="detailsTable">
+        <tr>
+          <th>Date</th>
+          <th>Impressions</th>
+          <th>Clicks</th>
+          <th>CTR</th>
+        </tr>
+        {{range .report}}
+        <tr>
+          <td>{{.Date}}</td>
+          <td>{{.Impressions}}</td>
+          <td>{{.Clicks}}</td>
+          <td>{{printf "%.2f" .CTR}}%</td>
+        </tr>
+        {{end}}
+      </table>
+    </section>
+  </div>
+
+  <script>
+    //Testttt
+    const chartData = {
+      labels: ['2024-07-01', '2024-07-02', '2024-07-03', '2024-07-04'],
+      datasets: [
+        {
+          label: 'Impressions',
+          data: [100, 200, 150, 300],
+          backgroundColor: 'rgba(0, 123, 255, 0.5)',
+          borderColor: 'rgba(0, 123, 255, 1)',
+          borderWidth: 2,
+          pointRadius: 8
+        },
+        {
+          label: 'Clicks',
+          data: [10, 25, 30, 50],
+          backgroundColor: 'rgba(40, 167, 69, 0.5)',
+          borderColor: 'rgba(40, 167, 69, 1)',
+          borderWidth: 2,
+          pointRadius: 8
+        }
+      ]
+    };
+
+    const config = {
+      type: 'line',
+      data: chartData,
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    };
+
+    new Chart(
+      document.getElementById('performanceChart'),
+      config
+    );
+  </script>
+</body>
+</html>
