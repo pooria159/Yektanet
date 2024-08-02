@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/robfig/cron"
-	"github.com/segmentio/kafka-go"
 	"gorm.io/gorm"
 )
 
@@ -145,7 +144,7 @@ func main() {
 
 	// Set up and start the cron job
 	c := cron.New()
-	err = c.AddFunc("* * * * *", aggregateData)
+	err = c.AddFunc("@hourly", aggregateData)
 	if err != nil {
 		log.Fatalf("failed to add cron job: %v", err)
 	}
