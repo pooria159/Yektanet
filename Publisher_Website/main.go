@@ -21,9 +21,12 @@ func init() {
 func main() {
 	router := gin.Default()
 	router.Use(cors.Default())
-
 	router.LoadHTMLGlob("templates/*")
 	router.Static("/static", "./static")
+	router.GET("/test", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "Hello World"})
+		return
+	})
 	router.GET("/:publisher", func(c *gin.Context) {
 		publisher := c.Param("publisher")
 		text, exists := publisherData[publisher]
