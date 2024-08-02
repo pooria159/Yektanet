@@ -14,7 +14,7 @@
           const adContent = `
                 <img src="https://panel.lontra.tech/${ad.ImagePath}" alt="${ad.Title}" style="width:100%; height: 100%;" />
                 <h3>${ad.Title}</h3>
-                <a class="click-here" href="${ad.ClickLink}">Click here</a>
+                <a class="click-here" href="${ad.ClickLink}" target="_blank" rel="noopener noreferrer">Click here</a>
               `;
           adContainer.innerHTML = adContent;
           const observer = new IntersectionObserver((entries) => {

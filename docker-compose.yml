@@ -36,6 +36,7 @@ services:
       - "traefik.http.services.portainer-dashboard.loadbalancer.server.port=9000"
       - "traefik.http.routers.portainer-dashboard.rule=Host(`portainer.lontra.tech`)"
 
+
   adserver:
     image: allyellow/adserver:latest
     restart: always
@@ -80,7 +81,7 @@ services:
     networks:
       - traefik
     volumes:
-    - ./Panel/media:/app/media
+      - ./Panel/media:/app/media
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.panel.tls=true"
@@ -137,8 +138,45 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    networks:
+      - traefik
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.tls=true"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls.certresolver=production"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.lontra.tech`)"
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: always
+    networks:
+      - traefik
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.tls=true"
+      - "traefik.http.routers.prometheus.entrypoints=websecure"
+      - "traefik.http.routers.prometheus.tls.certresolver=production"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.lontra.tech`)"
+
 volumes:
   postgres_data:
+  grafana-storage:
 
 networks:
   traefik:

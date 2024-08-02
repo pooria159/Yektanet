@@ -1,0 +1,39 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['prometheus:9090']
+  
+  - job_name: 'traefik'
+    static_configs:
+      - targets: ['traefik:8080']
+  
+  - job_name: 'portainer'
+    static_configs:
+      - targets: ['portainer:9000']
+  
+  - job_name: 'adserver'
+    static_configs:
+      - targets: ['adserver:9090']
+  
+  - job_name: 'eventserver'
+    static_configs:
+      - targets: ['eventserver:8081']
+  
+  - job_name: 'panel'
+    static_configs:
+      - targets: ['panel:8082']
+  
+  - job_name: 'publisher'
+    static_configs:
+      - targets: ['publisher:8089']
+  
+  - job_name: 'pgadmin'
+    static_configs:
+      - targets: ['pgadmin:80']
+  
+  - job_name: 'db'
+    static_configs:
+      - targets: ['db:5432']

@@ -1,9 +1,10 @@
 package routes
 
 import (
-	"github.com/gin-gonic/gin"
 	"go-ad-panel/controllers"
 	"go-ad-panel/repositories"
+
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
@@ -32,6 +33,8 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	router.POST("/advertisers/:id/charge", advertiserController.ChargeAdvertiser)
 	router.POST("/publishers/:id/withdraw", publisherController.PublisherWithdraw)
 	router.POST("/ads/:id/toggle", adController.ToggleActivation)
+	router.GET("ads/:id", adController.GetAd)
+
 	v1 := router.Group("/api/v1")
 	{
 		// Publisher routes
