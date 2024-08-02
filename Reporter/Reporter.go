@@ -3,16 +3,23 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
 	"github.com/robfig/cron"
 	"github.com/segmentio/kafka-go"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var db *gorm.DB
+
+
+/* Constants Configuring Reporter's Functionality. */
+const BROKER_ADDRESS	= "www.lontra.tech:9092"
+const TOPIC				= "test"
+const GROUP_ID			= "reporter_group"
+
 
 type Event struct {
 	gorm.Model
@@ -34,14 +41,11 @@ type AggregatedData struct {
 }
 
 func setupKafkaReader() *kafka.Reader {
-	brokerAddress := "localhost:9092" //temp
-	topic := "events_topic"
-	groupID := "reporter_group"
 
 	return kafka.NewReader(kafka.ReaderConfig{
-		Brokers:  []string{brokerAddress},
-		Topic:    topic,
-		GroupID:  groupID,
+		Brokers:  []string{BROKER_ADDRESS},
+		Topic:    TOPIC,
+		GroupID:  GROUP_ID,
 		MinBytes: 10e3, // 10KB
 		MaxBytes: 10e6, // 10MB
 	})
@@ -51,7 +55,9 @@ func consumeEvents(reader *kafka.Reader) {
 	defer reader.Close()
 
 	for {
+		fmt.Println("Reading a new message ...")
 		msg, err := reader.ReadMessage(context.Background())
+		fmt.Printf("New message is read: %v\n", msg)
 		if err != nil {
 			log.Printf("could not read message: %v", err)
 			continue
@@ -73,8 +79,8 @@ func processEvent(eventData []byte) {
 		return
 	}
 
-// Log successful insertion
-log.Printf("Inserted event into DB: %v, AdID: %v, EventType: %v", event.Time, event.AdID, event.EventType)
+	// Log successful insertion
+	log.Printf("Inserted event into DB: %v, AdID: %v, EventType: %v", event.Time, event.AdID, event.EventType)
 
 }
 
@@ -132,7 +138,9 @@ func aggregateData() {
 func main() {
 	// GORM: Initialize the database connection
 	var err error
-	db, err = gorm.Open(postgres.Open(""), &gorm.Config{}) //??
+	CreateDBIfNotExists()
+
+	db, err = ConnectToDB()
 	if err != nil {
 		log.Fatalf("failed to connect database: %v", err)
 	}
@@ -142,7 +150,6 @@ func main() {
 		log.Fatalf("failed to auto migrate: %v", err)
 	}
 
-	
 	// Set up and start the cron job
 	c := cron.New()
 	err = c.AddFunc("@hourly", aggregateData)
@@ -153,6 +160,7 @@ func main() {
 
 	// Set up Kafka reader
 	reader := setupKafkaReader()
-	go consumeEvents(reader)
-	setupAndRunAPIRouter()
+	fmt.Println("Setup successfully!")
+	consumeEvents(reader)
+	//setupAndRunAPIRouter()
 }

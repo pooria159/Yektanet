@@ -4,6 +4,7 @@ go 1.22.5
 
 require (
 	github.com/gin-gonic/gin v1.10.0
+	github.com/joho/godotenv v1.5.1
 	github.com/robfig/cron v1.2.0
 	github.com/segmentio/kafka-go v0.4.47
 	gorm.io/driver/postgres v1.5.9
