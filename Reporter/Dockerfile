@@ -1,8 +1,6 @@
-FROM golang:1.22.5-bullseye
+COPY .env.prod .env
 
-WORKDIR /app
-
-RUN go mod init Reporter.go
+RUN go mod init ad-reporter
 
 COPY . .
 
