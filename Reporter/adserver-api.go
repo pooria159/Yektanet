@@ -8,6 +8,8 @@ import (
 )
 
 const REPORTER_PORT = 9999
+const MEAN_CTR_API = "/mean_ctr"
+const AD_PUBLISHER_API = "/ad_publisher"
 
 type AdvertiserPublisherEventCount struct {
 	advertiser_id	string
@@ -135,6 +137,8 @@ func sendAdStatistics(c *gin.Context) {
  indefinitely. */
 func setupAndRunAPIRouter() {
 	router := gin.Default()
-	
+	router.GET(MEAN_CTR_API, sendAdvertisersMeanCTR)
+	router.GET(AD_PUBLISHER_API, sendAdStatistics)
+
 	router.Run(":" + strconv.Itoa(REPORTER_PORT))
 }

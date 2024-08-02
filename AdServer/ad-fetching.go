@@ -1,6 +1,13 @@
 package main
 
-import "math"
+import (
+	"encoding/json"
+	"errors"
+	"io"
+	"log"
+	"math"
+	"net/http"
+)
 
 /*
 This file will contain methods needed to fetch ads from panel,
@@ -49,6 +56,10 @@ lower bound: CTR - 1.36 / sqrt(N)
 upper bound: CTR * a
 lower bound: CTR / a
 */
+
+/* Constants Configuring Functionality of Ad-Fetching */
+const MEAN_CTR_API = "/mean_ctr"
+const AD_PUBLISHER_API = "/ad_publisher"
 
 /* Structs and Variables Relating to Ad-fetching. */
 
@@ -101,9 +112,36 @@ const RELATIVE_TOLERANCE = 2
 
 /* Functions Used for Updating Ad Statistics */
 
-/* Queries the metadata database and retrieves each advertiser's mean CTR per publisher. */
-func fetchMeanCTRs() {
-	// TODO: Update meanCtr
+/* Makes a request to Reporter and retrieves each advertiser's mean CTR per publisher. */
+func fetchMeanCTRs() error {
+	client := http.DefaultClient
+	req, err := http.NewRequest("GET", MEAN_CTR_API, nil)
+	if err != nil {
+		log.Println("error in making request")
+		return err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("error in doing request")
+		return err
+	}
+	if resp.StatusCode != http.StatusOK {
+		log.Println("error in Reporter")
+		return errors.New("panel sent " + resp.Status)
+	}
+	responseByte, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("error in reading response body")
+		return err
+	}
+	err = json.Unmarshal(responseByte, &advertiserEvaluation)
+	//err := json.Unmarshal(TEST_RAW_RESPONSE, &allFetchedAds)
+	if err != nil {
+		log.Println("error in parsing response")
+		return err
+	}
+
 }
 
 /* Queries the metadata database and computes the success statistics of each ad-publisher pair. */
