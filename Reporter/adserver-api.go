@@ -47,7 +47,7 @@ type Statistics struct {
 // Maps advertiser-publisher collaborations to their emprical success statistics.
 var advertiserEvaluation map[AdvertiserPublisherCollaboration]Statistics
 
-// Map 
+// Maps ad-publisher collaborations to ther emprical success statistics.
 var adEvaluation map[AdPublisherCollaboration]Statistics
 
 /* Sends the mean ctr of each advertiser's ads, per publisher. */
@@ -130,6 +130,9 @@ func sendAdStatistics(c *gin.Context) {
 		}
 		adEvaluation[apc] = statistics
 	}
+
+	/* Our statistics map is now ready to be sent. */
+	c.JSON(http.StatusOK, adEvaluation)
 }
 
 /* Runs the router that will route api calls from ad server to

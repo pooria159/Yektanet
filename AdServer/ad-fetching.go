@@ -90,7 +90,7 @@ type ConfidenceInterval struct {
 }
 
 // Maps collaborations to their emprical success statistics.
-var evaluation map[AdPublisherCollaboration]Statistics
+var adEvaluation map[AdPublisherCollaboration]Statistics
 
 // Maps id of each advertiser to statistics of its ads.
 var advertiserEvaluation map[AdvertiserPublisherCollaboration]Statistics
@@ -112,41 +112,60 @@ const RELATIVE_TOLERANCE = 2
 
 /* Functions Used for Updating Ad Statistics */
 
-/* Makes a request to Reporter and retrieves each advertiser's mean CTR per publisher. */
-func fetchMeanCTRs() error {
+/* Issues a GET request to the specified url. Returnes the 
+ response a slice of bytes, together with errors encountered
+ in the process, if any. */
+func getRequest(getUrl string) ([]byte, error) {
 	client := http.DefaultClient
 	req, err := http.NewRequest("GET", MEAN_CTR_API, nil)
 	if err != nil {
 		log.Println("error in making request")
-		return err
+		return nil, err
 	}
-
+	
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("error in doing request")
-		return err
+		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
 		log.Println("error in Reporter")
-		return errors.New("panel sent " + resp.Status)
+		return nil, errors.New("reporter sent " + resp.Status)
 	}
 	responseByte, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("error in reading response body")
+		return nil, err
+	}
+	return responseByte, nil
+}
+
+/* Makes a request to Reporter and retrieves each advertiser's mean CTR per publisher. */
+func fetchMeanCTRs() error {
+	responseByte, err := getRequest(MEAN_CTR_API)
+	if err != nil {
 		return err
 	}
 	err = json.Unmarshal(responseByte, &advertiserEvaluation)
-	//err := json.Unmarshal(TEST_RAW_RESPONSE, &allFetchedAds)
 	if err != nil {
 		log.Println("error in parsing response")
 		return err
 	}
-
+	return nil
 }
 
 /* Queries the metadata database and computes the success statistics of each ad-publisher pair. */
-func fetchAdStatistics() {
-	// TODO: Update success statistics
+func fetchAdStatistics() error {
+	responseByte, err := getRequest(MEAN_CTR_API)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(responseByte, &adEvaluation)
+	if err != nil {
+		log.Println("error in parsing response")
+		return err
+	}
+	return nil
 }
 
 /* For each publisher, sets CTR of its new ads to the mean CTR of its advertiser. */
@@ -167,7 +186,7 @@ func usePriorsForNewAds() {
 				advertiserPubCollab.AdvertiserID = ad.AdvertiserID
 				advertiserPubCollab.PublisherID = publisherID
 				statistics.CTR = advertiserEvaluation[advertiserPubCollab].CTR
-				evaluation[adPubCollab] = statistics
+				adEvaluation[adPubCollab] = statistics
 			}
 		}
 	}
