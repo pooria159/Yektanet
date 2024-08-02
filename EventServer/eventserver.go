@@ -1,11 +1,13 @@
-//package eventserver
-
 package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/segmentio/kafka-go"
+	"time"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/zsais/go-gin-prometheus"
@@ -13,7 +15,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 )
 
 // CONSTS
@@ -23,6 +24,8 @@ const (
 )
 const requestThreshold = 2
 const timeframe = 60 // in
+const kafkaBrokerAddress = "95.217.125.140:29092"
+const kafkaTopic = "test"
 
 var blacklistedUserAgents = []string{
 	"Python",                // Python scripts
@@ -76,15 +79,23 @@ type EventServer struct {
 	clicks         map[string]Value
 	clickchan      chan Event
 	impressionchan chan Event
+	kafkaWriter    *kafka.Writer // Kafka writer
 }
 
 // NewEventServer creates a new EventServer with initialized maps and channel
 func NewEventServer() *EventServer {
+	writer := kafka.NewWriter(kafka.WriterConfig{
+		Brokers:  []string{kafkaBrokerAddress},
+		Topic:    kafkaTopic,
+		Balancer: &kafka.LeastBytes{},
+	})
+
 	return &EventServer{
 		impressions:    make(map[string]Value),
 		clicks:         make(map[string]Value),
 		clickchan:      make(chan Event, 100), // Buffer size of 100
 		impressionchan: make(chan Event, 100), // Buffer size of 100
+		kafkaWriter:    writer,
 	}
 }
 
@@ -116,7 +127,6 @@ func UserAgentBlacklist() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userAgent := c.GetHeader("User-Agent")
 		if isBlacklisted(userAgent) {
-			// Block the request
 			c.JSON(http.StatusForbidden, gin.H{"message": "Blocked: Disallowed User-Agent"})
 			c.Abort()
 		} else {
@@ -136,7 +146,6 @@ func isBlacklisted(userAgent string) bool {
 
 // handleImpression handles the impression events
 func (s *EventServer) handleImpression(c *gin.Context) {
-	// Extract event information from url
 	eventInfoToken := c.Param("info")
 	var event Event
 	parsedToken, err := jwt.ParseWithClaims(eventInfoToken, &event, func(t *jwt.Token) (interface{}, error) {
@@ -154,7 +163,6 @@ func (s *EventServer) handleImpression(c *gin.Context) {
 		s.impressions[event.UserID] = value
 		s.impressionchan <- event
 
-		//		s.callAPI(event)
 		if err := s.callAPI(event); err != nil {
 			log.Printf("Failed to call API for impression event: %v\n", err)
 		}
@@ -162,6 +170,7 @@ func (s *EventServer) handleImpression(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"status": "Impression processed"})
 }
+
 func (s *EventServer) captchaPage(c *gin.Context) {
 	eventInfoToken := c.Query("info")
 	c.HTML(http.StatusOK, "captcha.html", gin.H{
@@ -320,14 +329,37 @@ func (s *EventServer) callAPI(event Event) error {
 	return nil
 }
 
+// processEvents processes events and sends them to Kafka
 func (s *EventServer) processEvents() {
-	//TODO Process events e.g., send to Kafka
-	// event := <-s.impressionchan
-	// go s.sendToKafka(event, "impression")
+	for {
+		select {
+		case event := <-s.impressionchan:
+			s.sendToKafka(event, "impression")
+		case event := <-s.clickchan:
+			s.sendToKafka(event, "click")
+		}
+	}
 }
 
+// sendToKafka sends an event to Kafka
 func (s *EventServer) sendToKafka(event Event, eventType string) {
-	//TODO
+	eventData, err := json.Marshal(event)
+	if err != nil {
+		log.Printf("could not marshal event: %v", err)
+		return
+	}
+
+	msg := kafka.Message{
+		Key:   []byte(event.AdID),
+		Value: eventData,
+	}
+
+	err = s.kafkaWriter.WriteMessages(context.Background(), msg)
+	if err != nil {
+		log.Printf("could not send event to Kafka: %v", err)
+	} else {
+		log.Printf("Sent %s event to Kafka: %s", eventType, event.AdID)
+	}
 }
 
 // SetupRouter sets up the routes for the EventServer
@@ -348,8 +380,6 @@ func (s *EventServer) SetupRouter() *gin.Engine {
 
 	return router
 }
-
-//main
 
 func main() {
 	server := NewEventServer()

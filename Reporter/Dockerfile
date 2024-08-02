@@ -12,12 +12,12 @@ RUN /root/librdkafka/configure
 RUN make
 RUN make install
 RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
+COPY .env.prod .env
 
-RUN go mod init eventserver
+RUN go mod init ad-reporter
 
 COPY . .
 
 RUN go mod tidy
 
-RUN go build -o eventserver eventserver.go
-
+RUN go build -o reporter .
