@@ -342,7 +342,7 @@ func (s *EventServer) SetupRouter() *gin.Engine {
 	router.POST("/verify-captcha", s.verifyCaptcha)
 	router.GET("/impression/:info", s.handleImpression)
 	router.GET("/click/:info", s.handleClick)
-	
+
 	return router
 }
 
