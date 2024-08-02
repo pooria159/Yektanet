@@ -8,4 +8,4 @@ COPY . .
 
 RUN go mod tidy
 
-RUN go build -o publisher main.go
+RUN go build -o publisher .

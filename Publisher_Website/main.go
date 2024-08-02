@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -20,7 +19,7 @@ func init() {
 
 func main() {
 	router := gin.Default()
-	router.Use(cors.Default())
+	//router.Use(cors.Default())
 	router.LoadHTMLGlob("templates/*")
 	router.Static("/static", "./static")
 	router.GET("/test", func(c *gin.Context) {
