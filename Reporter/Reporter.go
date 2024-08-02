@@ -72,7 +72,12 @@ func processEvent(eventData []byte) {
 		log.Printf("could not insert event into DB: %v", err)
 		return
 	}
+<<<<<<< HEAD
 	log.Printf("Inserted event into DB: %s, AdID: %d, EventType: %s", event.Time, event.AdID, event.EventType)
+=======
+	// Log successful insertion
+	log.Printf("Inserted event into DB: %v, AdID: %v, EventType: %v", event.Time, event.AdID, event.EventType)
+>>>>>>> aeb254f1452ed7716d881386f737d7c51e5e30a1
 
 }
 
@@ -142,6 +147,7 @@ func main() {
 
 	// Set up Kafka reader
 	reader := setupKafkaReader()
+<<<<<<< HEAD
 	consumeEvents(reader)
 
 	// Set up and start the cron job
@@ -154,4 +160,10 @@ func main() {
 
 	select {}
 
+=======
+	/* Run the two main workers:
+	 event-consumer and api-handler. */
+	go consumeEvents(reader)
+	setupAndRunAPIRouter()
+>>>>>>> aeb254f1452ed7716d881386f737d7c51e5e30a1
 }
