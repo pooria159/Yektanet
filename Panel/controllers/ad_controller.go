@@ -250,6 +250,5 @@ func (ctrl AdController) GetAd(c *gin.Context) {
 		return
 	}
 
-	var TotalSpent = ad.BidValue * ad.Clicks
-	c.HTML(http.StatusOK, "ad.html", gin.H{"ad": ad , "TotalSpent": TotalSpent})
+	c.HTML(http.StatusOK, "ad.html", gin.H{"ad": ad })
 }

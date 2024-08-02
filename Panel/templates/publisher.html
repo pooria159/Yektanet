@@ -175,6 +175,10 @@
       </section>
       <section class="chart-container">
         <h2>Reports Over Time</h2>
+        <select id="timeRange" onchange="updateChart()">
+          <option value="day">Last Day</option>
+          <option value="week">Last Week</option>
+        </select>
         <canvas id="myChart" width="400" height="200"></canvas>
       </section>
     </div>
@@ -301,53 +305,57 @@
         document.getElementById("amount").value = value;
       }
 
-      document.addEventListener("DOMContentLoaded", function () {
+      function getLastNDaysData(n, label) {
+        const data = [];
+        const today = new Date();
+        for (let i = 0; i < n; i++) {
+          const date = new Date();
+          date.setDate(today.getDate() - i);
+          data.push({
+            x: date.toISOString().split("T")[0],
+            y: Math.floor(Math.random() * 500 + 50),
+          });
+        }
+        return data.reverse();
+      }
+
+      function createChartData() {
+        return {
+          datasets: [
+            {
+              label: "Revenue",
+              data: getLastNDaysData(7, "Revenue"),
+              backgroundColor: "rgba(255, 99, 132, 0.5)",
+              borderColor: "rgba(255, 99, 132, 1)",
+              borderWidth: 2,
+              pointRadius: 8,
+            },
+            {
+              label: "Impressions",
+              data: getLastNDaysData(7, "Impressions"),
+              backgroundColor: "rgba(54, 162, 235, 0.5)",
+              borderColor: "rgba(54, 162, 235, 1)",
+              borderWidth: 2,
+              pointRadius: 8,
+            },
+            {
+              label: "Clicks",
+              data: getLastNDaysData(7, "Clicks"),
+              backgroundColor: "rgba(75, 192, 192, 0.5)",
+              borderColor: "rgba(75, 192, 192, 1)",
+              borderWidth: 2,
+              pointRadius: 8,
+            },
+          ],
+        };
+      }
+
+      function createChart(data) {
         const ctx = document.getElementById("myChart").getContext("2d");
-        const myChart = new Chart(ctx, {
+        if (window.chart) window.chart.destroy();
+        window.chart = new Chart(ctx, {
           type: "line",
-          data: {
-            datasets: [
-              {
-                label: "Revenue",
-                data: [
-                  { x: "2024-07-01", y: 200 },
-                  { x: "2024-07-02", y: 250 },
-                  { x: "2024-07-03", y: 300 },
-                  { x: "2024-07-04", y: 400 },
-                ],
-                backgroundColor: "rgba(255, 99, 132, 0.5)",
-                borderColor: "rgba(255, 99, 132, 1)",
-                borderWidth: 2,
-                pointRadius: 8,
-              },
-              {
-                label: "Impressions",
-                data: [
-                  { x: "2024-07-01", y: 1500 },
-                  { x: "2024-07-02", y: 1800 },
-                  { x: "2024-07-03", y: 2200 },
-                  { x: "2024-07-04", y: 1000 },
-                ],
-                backgroundColor: "rgba(54, 162, 235, 0.5)",
-                borderColor: "rgba(54, 162, 235, 1)",
-                borderWidth: 2,
-                pointRadius: 8,
-              },
-              {
-                label: "Clicks",
-                data: [
-                  { x: "2024-07-01", y: 75 },
-                  { x: "2024-07-02", y: 50 },
-                  { x: "2024-07-03", y: 60 },
-                  { x: "2024-07-04", y: 30 },
-                ],
-                backgroundColor: "rgba(75, 192, 192, 0.5)",
-                borderColor: "rgba(75, 192, 192, 1)",
-                borderWidth: 2,
-                pointRadius: 8,
-              },
-            ],
-          },
+          data: data,
           options: {
             scales: {
               x: {
@@ -369,6 +377,24 @@
             },
           },
         });
+      }
+
+      function updateChart() {
+        const timeRange = document.getElementById("timeRange").value;
+        if (timeRange === "day") {
+          createChart({
+            datasets: createChartData().datasets.map((dataset) => ({
+              ...dataset,
+              data: dataset.data.slice(0, 1),
+            })),
+          });
+        } else if (timeRange === "week") {
+          createChart(createChartData());
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        createChart(createChartData());
       });
     </script>
   </body>

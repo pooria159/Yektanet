@@ -5,14 +5,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Lato"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Montserrat"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
     <style>
-      body, h1, h2, h3, h4, h5, h6 {
+      body,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
         font-family: "Lato", sans-serif;
       }
-      .w3-bar, h1, button {
+      .w3-bar,
+      h1,
+      button {
         font-family: "Montserrat", sans-serif;
       }
       header {
@@ -33,7 +50,8 @@
         bottom: 0;
         background-color: rgba(0, 0, 0, 0.7);
       }
-      header h1, header p {
+      header h1,
+      header p {
         position: relative;
         z-index: 1;
       }
@@ -93,55 +111,38 @@
       <p class="w3-xlarge">Publisher 2</p>
     </header>
 
-    <div class="w3-row-padding w3-padding-32 w3-container" style="height: calc(100vh - 320px)">
+    <div
+      class="w3-row-padding w3-padding-32 w3-container"
+      style="height: calc(100vh - 320px)"
+    >
       <div class="w3-content">
         <div class="w3-twothird">
           <h1>Football news of the day</h1>
-          <h5 class="w3-padding-16">
-            Welcome to the ultimate source for the latest football news! Stay updated with breaking stories, match reports, and exclusive interviews from the world of football. From the major leagues to international competitions, we've got you covered.
-
-            Get insights into team strategies, player transfers, and behind-the-scenes happenings. Our comprehensive coverage includes match previews, post-match analysis, and detailed statistics to keep you informed.
-
-            Whether you are a fan of the Premier League, La Liga, Serie A, Bundesliga, or any other league, our daily updates ensure you won't miss a moment of the action. Follow your favorite teams and players, and join the conversation with fellow football enthusiasts. Thank you for choosing us as your trusted source for football news.
-          </h5>
+          <p class="w3-padding-16">
+            Welcome to the ultimate source for the latest football news! Stay
+            updated with breaking stories, match reports, and exclusive
+            interviews from the world of football. From the major leagues to
+            international competitions, we've got you covered. Get insights into
+            team strategies, player transfers, and behind-the-scenes happenings.
+            Our comprehensive coverage includes match previews, post-match
+            analysis, and detailed statistics to keep you informed. Whether you
+            are a fan of the Premier League, La Liga, Serie A, Bundesliga, or
+            any other league, our daily updates ensure you won't miss a moment
+            of the action. Follow your favorite teams and players, and join the
+            conversation with fellow football enthusiasts. Thank you for
+            choosing us as your trusted source for football news.
+          </p>
         </div>
 
         <div class="w3-third w3-center">
           <div class="ad-box" id="adBox">
-            Advertisements will be placed here
+            <script
+              src="https://panel.lontra.tech/static/fetchAd.js"
+              id="41"
+            ></script>
           </div>
         </div>
       </div>
     </div>
-
-    <script>
-      // Simulate script adding ad content
-      document.addEventListener("DOMContentLoaded", function() {
-        const adBox = document.getElementById('adBox');
-        adBox.innerHTML = `
-          <img src="https://via.placeholder.com/300x200" alt="Ad Image">
-          <h3>Ad Title</h3>
-          <a href="#" class="click-here" onclick="sendPostRequest(event)">Click here</a>
-        `;
-      });
-
-      function sendPostRequest(event) {
-        event.preventDefault();
-        fetch('https://example.com/api/click', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ ad: 'Ad Title', clickedAt: new Date().toISOString() })
-        })
-        .then(response => response.json())
-        .then(data => {
-          console.log('Success:', data);
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-        });
-      }
-    </script>
   </body>
 </html>

@@ -74,43 +74,48 @@
         </tr>
         <tr>
           <th>Total Spent</th>
-          <td>${{.TotalSpent}}</td>
+          <td>{{.ad.EngagedCredit}}</td>
         </tr>
       </table>
     </section>
     <section>
       <h2>Performance Chart</h2>
+      <select id="timeRange" onchange="updateChart()">
+        <option value="day">Last Day</option>
+        <option value="week">Last Week</option>
+      </select>
       <canvas id="performanceChart"></canvas>
-    </section>
-    <section>
-      <h2>Details</h2>
-      <table id="detailsTable">
-        <tr>
-          <th>Date</th>
-          <th>Impressions</th>
-          <th>Clicks</th>
-          <th>CTR</th>
-        </tr>
-        {{range .report}}
-        <tr>
-          <td>{{.Date}}</td>
-          <td>{{.Impressions}}</td>
-          <td>{{.Clicks}}</td>
-          <td>{{printf "%.2f" .CTR}}%</td>
-        </tr>
-        {{end}}
-      </table>
     </section>
   </div>
 
   <script>
-    //Testttt
+    const mockData = {
+      day: {
+        labels: Array.from({ length: 24 }, (_, i) => {
+          let date = new Date();
+          date.setHours(date.getHours() - i);
+          return date.toISOString().slice(0, 16).replace('T', ' ');
+        }).reverse(),
+        impressions: Array.from({ length: 24 }, () => Math.floor(Math.random() * 200) + 100),
+        clicks: Array.from({ length: 24 }, () => Math.floor(Math.random() * 50) + 10)
+      },
+      week: {
+        labels: Array.from({ length: 7 }, (_, i) => {
+          let date = new Date();
+          date.setDate(date.getDate() - i);
+          return date.toISOString().slice(0, 10);
+        }).reverse(),
+        impressions: Array.from({ length: 7 }, () => Math.floor(Math.random() * 1000) + 500),
+        clicks: Array.from({ length: 7 }, () => Math.floor(Math.random() * 200) + 50)
+      }
+    };
+
     const chartData = {
-      labels: ['2024-07-01', '2024-07-02', '2024-07-03', '2024-07-04'],
+      labels: [],
       datasets: [
         {
           label: 'Impressions',
-          data: [100, 200, 150, 300],
+          data: [],
           backgroundColor: 'rgba(0, 123, 255, 0.5)',
           borderColor: 'rgba(0, 123, 255, 1)',
           borderWidth: 2,
@@ -118,7 +123,7 @@
         },
         {
           label: 'Clicks',
-          data: [10, 25, 30, 50],
+          data: [],
           backgroundColor: 'rgba(40, 167, 69, 0.5)',
           borderColor: 'rgba(40, 167, 69, 1)',
           borderWidth: 2,
@@ -139,10 +144,22 @@
       }
     };
 
-    new Chart(
-      document.getElementById('performanceChart'),
-      config
-    );
+    function updateChart() {
+      const timeRange = document.getElementById('timeRange').value;
+      const data = mockData[timeRange];
+
+      chartData.labels = data.labels;
+      chartData.datasets[0].data = data.impressions;
+      chartData.datasets[1].data = data.clicks;
+
+      myChart.update();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const ctx = document.getElementById('performanceChart').getContext('2d');
+      window.myChart = new Chart(ctx, config);
+      updateChart();
+    });
   </script>
 </body>
 </html>
