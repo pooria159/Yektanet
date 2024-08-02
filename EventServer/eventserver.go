@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/segmentio/kafka-go"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -13,11 +15,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-
-	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
 )
-
 
 // CONSTS
 var JWT_ENCRYPTION_KEY = []byte("Golangers:Pooria-Mohammad-Roya-Sina") // Encryption key used to sign responses.
@@ -101,7 +99,6 @@ func NewEventServer() *EventServer {
 	}
 }
 
-
 type RecaptchaResponse struct {
 	Success     bool     `json:"success"`
 	ChallengeTs string   `json:"challenge_ts"`
@@ -173,6 +170,7 @@ func (s *EventServer) handleImpression(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"status": "Impression processed"})
 }
+
 func (s *EventServer) captchaPage(c *gin.Context) {
 	eventInfoToken := c.Query("info")
 	c.HTML(http.StatusOK, "captcha.html", gin.H{
@@ -236,6 +234,7 @@ func (s *EventServer) verifyCaptcha(c *gin.Context) {
 
 // handleClick handles the click events
 func (s *EventServer) handleClick(c *gin.Context) {
+	// Extract event information from url
 	eventInfoToken := c.Param("info")
 	var event Event
 	parsedToken, err := jwt.ParseWithClaims(eventInfoToken, &event, func(t *jwt.Token) (interface{}, error) {
@@ -243,6 +242,7 @@ func (s *EventServer) handleClick(c *gin.Context) {
 	})
 	if err != nil || !parsedToken.Valid {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid click token"})
+	}
 
 	if claims, ok := parsedToken.Claims.(*Event); ok {
 		issuedAt := claims.IssuedAt
@@ -293,10 +293,11 @@ func (s *EventServer) handleClick(c *gin.Context) {
 		s.clickchan <- event
 
 		if err := s.callAPI(event); err != nil {
-			log.Printf("Failed to call API for click event: %v\n", err)
+			log.Printf("Failed to call API for impression event: %v\n", err)
 		}
 	}
 
+	// Redirect to the ad URL
 	c.Redirect(http.StatusSeeOther, event.AdURL)
 }
 
