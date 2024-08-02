@@ -1,20 +1,23 @@
-//package eventserver
-
 package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"strings"
-	"time"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
+	"github.com/segmentio/kafka-go"
 )
 
+// Constants
 var JWT_ENCRYPTION_KEY = []byte("Golangers:Pooria-Mohammad-Roya-Sina") // Encryption key used to sign responses.
+const kafkaBrokerAddress = "localhost:9092"
+const kafkaTopic = "events_topic"
 
 // Event represents an event with user, publisher, ad IDs and URL
 type Event struct {
@@ -39,43 +42,36 @@ type EventServer struct {
 	clicks         map[string]Value
 	clickchan      chan Event
 	impressionchan chan Event
+	kafkaWriter    *kafka.Writer // Kafka writer
 }
 
 // NewEventServer creates a new EventServer with initialized maps and channel
 func NewEventServer() *EventServer {
+	writer := kafka.NewWriter(kafka.WriterConfig{
+		Brokers:  []string{kafkaBrokerAddress},
+		Topic:    kafkaTopic,
+		Balancer: &kafka.LeastBytes{},
+	})
+
 	return &EventServer{
 		impressions:    make(map[string]Value),
 		clicks:         make(map[string]Value),
 		clickchan:      make(chan Event, 100), // Buffer size of 100
 		impressionchan: make(chan Event, 100), // Buffer size of 100
+		kafkaWriter:    writer,
 	}
 }
 
 var blacklistedUserAgents = []string{
-	"Python",                // Python scripts
-	"curl",                  // cURL
-	"Postman",               // Postman API client
-	"HttpClient",            // Generic HTTP client
-	"Java",                  // Java clients
-	"Go-http-client",        // Go's default HTTP client
-	"Wget",                  // Wget utility
-	"php",                   // PHP scripts
-	"Ruby",                  // Ruby scripts
-	"Node.js",               // Node.js scripts
-	"BinGet",                // BinGet utility
-	"libwww-perl",           // Perl library
-	"Microsoft URL Control", // Microsoft URL Control tool
-	"Peach",                 // Peach fuzzing tool
-	"pxyscand",              // Proxy scanner
-	"PycURL",                // Python binding to libcurl
-	"Python-urllib",         // Python urllib library
+	"Python", "curl", "Postman", "HttpClient", "Java", "Go-http-client",
+	"Wget", "php", "Ruby", "Node.js", "BinGet", "libwww-perl",
+	"Microsoft URL Control", "Peach", "pxyscand", "PycURL", "Python-urllib",
 }
 
 func UserAgentBlacklist() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userAgent := c.GetHeader("User-Agent")
 		if isBlacklisted(userAgent) {
-			// Block the request
 			c.JSON(http.StatusForbidden, gin.H{"message": "Blocked: Disallowed User-Agent"})
 			c.Abort()
 		} else {
@@ -95,7 +91,6 @@ func isBlacklisted(userAgent string) bool {
 
 // handleImpression handles the impression events
 func (s *EventServer) handleImpression(c *gin.Context) {
-	// Extract event information from url
 	eventInfoToken := c.Param("info")
 	var event Event
 	parsedToken, err := jwt.ParseWithClaims(eventInfoToken, &event, func(t *jwt.Token) (interface{}, error) {
@@ -113,7 +108,6 @@ func (s *EventServer) handleImpression(c *gin.Context) {
 		s.impressions[event.UserID] = value
 		s.impressionchan <- event
 
-		//		s.callAPI(event)
 		if err := s.callAPI(event); err != nil {
 			log.Printf("Failed to call API for impression event: %v\n", err)
 		}
@@ -124,7 +118,6 @@ func (s *EventServer) handleImpression(c *gin.Context) {
 
 // handleClick handles the click events
 func (s *EventServer) handleClick(c *gin.Context) {
-	// Extract event information from url
 	eventInfoToken := c.Param("info")
 	var event Event
 	parsedToken, err := jwt.ParseWithClaims(eventInfoToken, &event, func(t *jwt.Token) (interface{}, error) {
@@ -132,19 +125,6 @@ func (s *EventServer) handleClick(c *gin.Context) {
 	})
 	if err != nil || !parsedToken.Valid {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid click token"})
-	}
-	if claims, ok := parsedToken.Claims.(*Event); ok {
-		issuedAt := claims.IssuedAt
-		currentTime := time.Now().Unix()
-		secondsElapsed := currentTime - issuedAt
-
-		const tokenValidityThreshold = 10
-		if secondsElapsed < tokenValidityThreshold {
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Click Time Invalid"})
-			return
-		}
-	} else {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid claims"})
 		return
 	}
 
@@ -157,11 +137,10 @@ func (s *EventServer) handleClick(c *gin.Context) {
 		s.clickchan <- event
 
 		if err := s.callAPI(event); err != nil {
-			log.Printf("Failed to call API for impression event: %v\n", err)
+			log.Printf("Failed to call API for click event: %v\n", err)
 		}
 	}
 
-	// Redirect to the ad URL
 	c.Redirect(http.StatusSeeOther, event.AdURL)
 }
 
@@ -193,14 +172,37 @@ func (s *EventServer) callAPI(event Event) error {
 	return nil
 }
 
+// processEvents processes events and sends them to Kafka
 func (s *EventServer) processEvents() {
-	//TODO Process events e.g., send to Kafka
-	// event := <-s.impressionchan
-	// go s.sendToKafka(event, "impression")
+	for {
+		select {
+		case event := <-s.impressionchan:
+			s.sendToKafka(event, "impression")
+		case event := <-s.clickchan:
+			s.sendToKafka(event, "click")
+		}
+	}
 }
 
+// sendToKafka sends an event to Kafka
 func (s *EventServer) sendToKafka(event Event, eventType string) {
-	//TODO
+	eventData, err := json.Marshal(event)
+	if err != nil {
+		log.Printf("could not marshal event: %v", err)
+		return
+	}
+
+	msg := kafka.Message{
+		Key:   []byte(event.AdID),
+		Value: eventData,
+	}
+
+	err = s.kafkaWriter.WriteMessages(context.Background(), msg)
+	if err != nil {
+		log.Printf("could not send event to Kafka: %v", err)
+	} else {
+		log.Printf("Sent %s event to Kafka: %s", eventType, event.AdID)
+	}
 }
 
 // SetupRouter sets up the routes for the EventServer
@@ -212,8 +214,6 @@ func (s *EventServer) SetupRouter() *gin.Engine {
 	router.GET("/click/:info", s.handleClick)
 	return router
 }
-
-//main
 
 func main() {
 	server := NewEventServer()
