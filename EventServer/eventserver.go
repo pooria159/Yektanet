@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/zsais/go-gin-prometheus"
 	"log"
 	"net/http"
 	"net/url"
@@ -333,6 +334,8 @@ func (s *EventServer) sendToKafka(event Event, eventType string) {
 func (s *EventServer) SetupRouter() *gin.Engine {
 
 	router := gin.Default()
+	p := ginprometheus.NewPrometheus("gin")
+	p.Use(router)
 	router.Use(UserAgentBlacklist())
 	router.Use(CORSMiddleware())
 

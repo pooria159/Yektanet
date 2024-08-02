@@ -1,10 +1,11 @@
 package routes
 
 import (
-	"go-ad-panel/controllers"
-	"go-ad-panel/repositories"
+	"github.com/zsais/go-gin-prometheus"
 
 	"github.com/gin-gonic/gin"
+	"go-ad-panel/controllers"
+	"go-ad-panel/repositories"
 	"gorm.io/gorm"
 )
 
@@ -26,7 +27,8 @@ func CORSMiddleware() gin.HandlerFunc {
 
 func SetupRouter(db *gorm.DB) *gin.Engine {
 	router := gin.Default()
-
+	p := ginprometheus.NewPrometheus("gin")
+	p.Use(router)
 	router.Use(CORSMiddleware())
 	router.LoadHTMLGlob("templates/*")
 	router.Static("/static", "./static")

@@ -3,6 +3,9 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
+	"github.com/zsais/go-gin-prometheus"
 	"io"
 	"log"
 	"math/rand"
@@ -10,9 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
 )
 
 /* Constants Configuring Functionality of the Server */
@@ -307,6 +307,8 @@ func main() {
 	   and query-responser. */
 	go periodicallyFetchAds()
 	router := gin.Default()
+	p := ginprometheus.NewPrometheus("gin")
+	p.Use(router)
 	router.Use(CORSMiddleware())
 	router.GET(API_TEMPLATE, getNewAd)
 	router.POST("/api/brake", brake)

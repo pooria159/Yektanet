@@ -142,6 +142,8 @@ services:
     image: grafana/grafana:latest
     container_name: grafana
     restart: always
+    depends_on:
+      - prometheus
     networks:
       - traefik
     ports:
