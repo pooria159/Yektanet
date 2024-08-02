@@ -11,13 +11,12 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/segmentio/kafka-go"
 )
 
 // Constants
 var JWT_ENCRYPTION_KEY = []byte("Golangers:Pooria-Mohammad-Roya-Sina") // Encryption key used to sign responses.
-const kafkaBrokerAddress = "localhost:9092"
-const kafkaTopic = "events_topic"
+const kafkaBrokerAddress = "95.217.125.140:29092"
+const kafkaTopic = "test"
 
 // Event represents an event with user, publisher, ad IDs and URL
 type Event struct {

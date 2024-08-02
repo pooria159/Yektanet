@@ -46,6 +46,11 @@ jobs:
         go mod tidy
         go build -o publisher
 
+    - name: Build and test Reporter
+      run: |
+        cd Reporter
+        go mod tidy
+        go build -o reporter
 
     - name: Login to DockerHub
       run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
@@ -56,10 +61,13 @@ jobs:
         docker build -t allyellow/eventserver ./EventServer
         docker build -t allyellow/panel ./Panel
         docker build -t allyellow/publisher ./Publisher_Website
+        docker build -t allyellow/reporter ./Reporter
+
         docker push allyellow/adserver
         docker push allyellow/eventserver
         docker push allyellow/panel
         docker push allyellow/publisher
+        docker push allyellow/reporter
 
     - name: Deploy to server
       env:

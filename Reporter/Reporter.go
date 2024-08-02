@@ -14,12 +14,10 @@ import (
 
 var db *gorm.DB
 
-
 /* Constants Configuring Reporter's Functionality. */
-const BROKER_ADDRESS	= "www.lontra.tech:9092"
-const TOPIC				= "test"
-const GROUP_ID			= "reporter_group"
-
+const BROKER_ADDRESS = "95.217.125.140:29092"
+const TOPIC = "test"
+const GROUP_ID = "reporter_group"
 
 type Event struct {
 	gorm.Model
@@ -85,17 +83,6 @@ func processEvent(eventData []byte) {
 }
 
 func insertEventIntoDB(event *Event) error {
-	// db, err := sql.Open("postgres", "  ")
-	// if err != nil {
-	// 	return err
-	// }
-	// defer db.Close()
-	// query := `
-	//     INSERT INTO Events (ad_id, event_type, time, publisher_id, credit, advertiser_id)
-	//     VALUES ($1, $2, $3, $4, $5, $6)
-	// `
-	// _, err = db.Exec(query, event.AdID, event.EventType, event.Time, event.PublisherID, event.Credit, event.AdvertiserID)
-	// return err
 
 	// GORM: Insert the event into the database
 	result := db.Create(event)
@@ -146,13 +133,19 @@ func main() {
 	}
 	// GORM: Auto Migrate the schema
 	err = db.AutoMigrate(&Event{})
+
+	if err != nil {
+		log.Fatalf("failed to auto migrate: %v", err)
+	}
+	err = db.AutoMigrate(&AggregatedData{})
+
 	if err != nil {
 		log.Fatalf("failed to auto migrate: %v", err)
 	}
 
 	// Set up and start the cron job
 	c := cron.New()
-	err = c.AddFunc("@hourly", aggregateData)
+	err = c.AddFunc("* * * * *", aggregateData)
 	if err != nil {
 		log.Fatalf("failed to add cron job: %v", err)
 	}
