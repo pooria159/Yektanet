@@ -73,15 +73,13 @@
           <td>{{.ad.BidValue}}</td>
         </tr>
         <tr>
-          <th>Total Spent</th>
-          <!-- <td>${{.ad.EngagedCredit}}</td> -->
+          <th>{{.ad.EngagedCredit}}</th>
         </tr>
       </table>
     </section>
     <section>
       <h2>Performance Chart</h2>
       <select id="timeRange" onchange="updateChart()">
-        <option value="hour">Last Hour</option>
         <option value="day">Last Day</option>
         <option value="week">Last Week</option>
       </select>
@@ -110,18 +108,21 @@
 
   <script>
     const mockData = {
-      hour: {
-        labels: Array.from({ length: 60 }, (_, i) => `${i} min ago`).reverse(),
-        impressions: Array.from({ length: 60 }, () => Math.floor(Math.random() * 100) + 50),
-        clicks: Array.from({ length: 60 }, () => Math.floor(Math.random() * 30) + 5)
-      },
       day: {
-        labels: Array.from({ length: 24 }, (_, i) => `${i} hours ago`).reverse(),
+        labels: Array.from({ length: 24 }, (_, i) => {
+          let date = new Date();
+          date.setHours(date.getHours() - i);
+          return date.toISOString().slice(0, 16).replace('T', ' ');
+        }).reverse(),
         impressions: Array.from({ length: 24 }, () => Math.floor(Math.random() * 200) + 100),
         clicks: Array.from({ length: 24 }, () => Math.floor(Math.random() * 50) + 10)
       },
       week: {
-        labels: Array.from({ length: 7 }, (_, i) => `Day ${i + 1}`).reverse(),
+        labels: Array.from({ length: 7 }, (_, i) => {
+          let date = new Date();
+          date.setDate(date.getDate() - i);
+          return date.toISOString().slice(0, 10);
+        }).reverse(),
         impressions: Array.from({ length: 7 }, () => Math.floor(Math.random() * 1000) + 500),
         clicks: Array.from({ length: 7 }, () => Math.floor(Math.random() * 200) + 50)
       }
