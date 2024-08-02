@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/robfig/cron"
+	"github.com/segmentio/kafka-go"
 	"gorm.io/gorm"
 )
 
