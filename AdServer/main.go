@@ -24,7 +24,7 @@ const FETCH_PERIOD = 60    // How many seconds to wait between fetching
 // Ads from Panel.
 const FETCH_URL = "https://panel.lontra.tech/api/v1/ads/active/" // Address from which ads are to be fetched.
 const EVENT_URL = "https://eventserver.lontra.tech/"             // Address to which ads are to be sent.
-const API_TEMPLATE = "/api/ads/"                                 // URL that will be routed to the getNewAd handler.
+const API_TEMPLATE = "/api/ads"                                  // URL that will be routed to the getNewAd handler.
 const PUBLISHER_ID_RECV_PARAM = "publisherID"                    // Name of the parameter in URL received from publisher that specifies publisher's id.
 
 const PRINT_RESPONSE = true                                            // Whether to print allAds after it is fetched.
