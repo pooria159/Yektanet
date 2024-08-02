@@ -1,14 +1,10 @@
-<<<<<<< HEAD
 module Reporter.go
-
-go 1.22.5
-=======
-module example/reporter.go
 
 go 1.22.5
 
 require (
 	github.com/gin-gonic/gin v1.10.0
+	github.com/robfig/cron v1.2.0
 	github.com/segmentio/kafka-go v0.4.47
 	gorm.io/driver/postgres v1.5.9
 	gorm.io/gorm v1.25.11
@@ -53,4 +49,3 @@ require (
 	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
->>>>>>> aeb254f1452ed7716d881386f737d7c51e5e30a1
