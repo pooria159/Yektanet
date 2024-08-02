@@ -96,6 +96,21 @@ type RecaptchaResponse struct {
 
 //CONTROLLERS
 
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	}
+}
 func UserAgentBlacklist() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userAgent := c.GetHeader("User-Agent")
@@ -319,12 +334,15 @@ func (s *EventServer) SetupRouter() *gin.Engine {
 
 	router := gin.Default()
 	router.Use(UserAgentBlacklist())
+	router.Use(CORSMiddleware())
+
 	router.LoadHTMLFiles("captcha.html")
+
 	router.GET("/captcha", s.captchaPage)
 	router.POST("/verify-captcha", s.verifyCaptcha)
-
 	router.GET("/impression/:info", s.handleImpression)
 	router.GET("/click/:info", s.handleClick)
+	
 	return router
 }
 
