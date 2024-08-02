@@ -307,7 +307,7 @@ func main() {
 	   and query-responser. */
 	go periodicallyFetchAds()
 	router := gin.Default()
-	p := ginprometheus.NewPrometheus("gin")
+	p := ginprometheus.NewPrometheus("adserver")
 	p.Use(router)
 	router.Use(CORSMiddleware())
 	router.GET(API_TEMPLATE, getNewAd)

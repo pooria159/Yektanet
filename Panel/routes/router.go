@@ -27,7 +27,7 @@ func CORSMiddleware() gin.HandlerFunc {
 
 func SetupRouter(db *gorm.DB) *gin.Engine {
 	router := gin.Default()
-	p := ginprometheus.NewPrometheus("gin")
+	p := ginprometheus.NewPrometheus("panel")
 	p.Use(router)
 	router.Use(CORSMiddleware())
 	router.LoadHTMLGlob("templates/*")

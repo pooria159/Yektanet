@@ -334,7 +334,7 @@ func (s *EventServer) sendToKafka(event Event, eventType string) {
 func (s *EventServer) SetupRouter() *gin.Engine {
 
 	router := gin.Default()
-	p := ginprometheus.NewPrometheus("gin")
+	p := ginprometheus.NewPrometheus("eventserver")
 	p.Use(router)
 	router.Use(UserAgentBlacklist())
 	router.Use(CORSMiddleware())
