@@ -96,7 +96,7 @@ func aggregateData() {
 		Clicks      string
 		Impressions string
 		//	Credit      string
-		Time time.Time
+		Time int64
 	}
 	// Query to aggregate data using GORM
 	db.Table("events").
@@ -115,8 +115,8 @@ func aggregateData() {
 			AdID:        result.AdID,
 			Clicks:      result.Clicks,
 			Impressions: result.Impressions,
-			Credit:      result.Credit,
-			Time:        result.Time,
+			//	Credit:      result.Credit,
+			Time: result.Time,
 		}
 		db.Create(&aggregatedData)
 	}
