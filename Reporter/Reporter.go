@@ -102,7 +102,7 @@ func processEvent(eventData []byte) {
 	}
 
 	//Added api call here instead of eventserver
-	if err := callAPI(event); err != nil {
+	if err := callAPI(*event); err != nil {
 		log.Printf("Failed to call API for an event: %v\n", err)
 	}
 
