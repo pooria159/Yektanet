@@ -4,12 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
-	"time"
-
 	"github.com/robfig/cron"
 	"github.com/segmentio/kafka-go"
 	"gorm.io/gorm"
+	"log"
 )
 
 var db *gorm.DB
@@ -26,7 +24,7 @@ type Event struct {
 	//	AdvertiserID string    `json:"advertiser_id" gorm:"column:advertiser_id"`
 	PublisherID string `json:"PublisherID" gorm:"column:publisher_id"`
 	//	Credit       int       `json:"Credit" gorm:"column:credit"`
-	Time time.Time `json:"Time" gorm:"column:time"`
+	Time int64 `json:"Time" gorm:"column:time"`
 }
 
 type AggregatedData struct {
