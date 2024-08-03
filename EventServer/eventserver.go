@@ -63,7 +63,7 @@ type Event struct {
 	AdID        string
 	AdURL       string
 	EventType   string
-
+	Time        int64
 	jwt.StandardClaims
 }
 
@@ -251,7 +251,7 @@ func (s *EventServer) handleClick(c *gin.Context) {
 
 		const tokenValidityThreshold = 4
 		if secondsElapsed < tokenValidityThreshold {
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Click Time Invalid"})
+			c.Redirect(http.StatusSeeOther, event.AdURL)
 			return
 		}
 	} else {
@@ -261,7 +261,7 @@ func (s *EventServer) handleClick(c *gin.Context) {
 
 	clientIP := c.ClientIP()
 	userAgent := c.GetHeader("User-Agent")
-	key := clientIP + "_" + userAgent
+	key := clientIP + "_" + userAgent + "_" + event.PublisherID
 
 	currentTime := time.Now()
 	requestData, exists := requestLog[key]
@@ -343,6 +343,7 @@ func (s *EventServer) processEvents() {
 
 // sendToKafka sends an event to Kafka
 func (s *EventServer) sendToKafka(event Event, eventType string) {
+	event.Time = event.StandardClaims.IssuedAt
 	eventData, err := json.Marshal(event)
 	if err != nil {
 		log.Printf("could not marshal event: %v", err)

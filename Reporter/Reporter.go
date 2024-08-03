@@ -21,21 +21,21 @@ const GROUP_ID = "reporter_group"
 
 type Event struct {
 	gorm.Model
-	EventType    string    `json:"type" gorm:"column:event_type"`
-	AdID         string    `json:"ad_id" gorm:"column:ad_id"`
-	AdvertiserID string    `json:"advertiser_id" gorm:"column:advertiser_id"`
-	PublisherID  string    `json:"publisher_id" gorm:"column:publisher_id"`
-	Credit       int       `json:"Credit" gorm:"column:credit"`
-	Time         time.Time `json:"Time" gorm:"column:time"`
+	EventType string `json:"EventType" gorm:"column:event_type"`
+	AdID      string `json:"AdID" gorm:"column:ad_id"`
+	//	AdvertiserID string    `json:"advertiser_id" gorm:"column:advertiser_id"`
+	PublisherID string `json:"PublisherID" gorm:"column:publisher_id"`
+	//	Credit       int       `json:"Credit" gorm:"column:credit"`
+	Time time.Time `json:"Time" gorm:"column:time"`
 }
 
 type AggregatedData struct {
 	gorm.Model
-	AdID        int       `gorm:"column:ad_id"`
-	Clicks      int       `gorm:"column:clicks"`
-	Impressions int       `gorm:"column:impressions"`
-	Credit      int       `gorm:"column:credit"`
-	Time        time.Time `gorm:"column:time"`
+	AdID        string `gorm:"column:ad_id"`
+	Clicks      string `gorm:"column:clicks"`
+	Impressions string `gorm:"column:impressions"`
+	//	Credit      string       `gorm:"column:credit"`
+	Time int64 `gorm:"column:time"`
 }
 
 func setupKafkaReader() *kafka.Reader {
@@ -92,11 +92,11 @@ func insertEventIntoDB(event *Event) error {
 
 func aggregateData() {
 	var results []struct {
-		AdID        int
-		Clicks      int
-		Impressions int
-		Credit      int
-		Time        time.Time
+		AdID        string
+		Clicks      string
+		Impressions string
+		//	Credit      string
+		Time time.Time
 	}
 	// Query to aggregate data using GORM
 	db.Table("events").
