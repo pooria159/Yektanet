@@ -164,9 +164,9 @@ func (s *EventServer) handleImpression(c *gin.Context) {
 		s.impressions[event.UserID] = value
 		s.impressionchan <- event
 
-		if err := s.callAPI(event); err != nil {
-			log.Printf("Failed to call API for impression event: %v\n", err)
-		}
+		// if err := s.callAPI(event); err != nil {
+		// 	log.Printf("Failed to call API for impression event: %v\n", err)
+		// }
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "Impression processed"})
