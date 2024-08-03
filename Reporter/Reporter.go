@@ -1,13 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/robfig/cron"
 	"github.com/segmentio/kafka-go"
 	"gorm.io/gorm"
-	"log"
 )
 
 var db *gorm.DB
@@ -34,6 +37,34 @@ type AggregatedData struct {
 	Impressions string `gorm:"column:impressions"`
 	//	Credit      string       `gorm:"column:credit"`
 	Time int64 `gorm:"column:time"`
+}
+
+// callInternalAPI simulates calling an internal API to handle the click
+func callAPI(event Event) error {
+	url := fmt.Sprintf("https://panel.lontra.tech/api/v1/ads/%s/event", event.AdID)
+	payload := map[string]interface{}{
+		"publisher_id": event.PublisherID,
+		"event_type":   event.EventType,
+	}
+	body, _ := json.Marshal(payload)
+
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
+	if err != nil {
+		return fmt.Errorf("failed to marshal payload: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("request failed: %v", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("received non-200 response: %d", resp.StatusCode)
+	}
+	fmt.Println("stat was 200")
+	return nil
 }
 
 func setupKafkaReader() *kafka.Reader {
@@ -68,6 +99,11 @@ func processEvent(eventData []byte) {
 	if err := json.Unmarshal(eventData, event); err != nil {
 		log.Printf("could not unmarshal event: %v", err)
 		return
+	}
+
+	//Added api call here instead of eventserver
+	if err := callAPI(event); err != nil {
+		log.Printf("Failed to call API for an event: %v\n", err)
 	}
 
 	if err := insertEventIntoDB(event); err != nil {

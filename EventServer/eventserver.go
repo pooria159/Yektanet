@@ -1,20 +1,21 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/segmentio/kafka-go"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
-	"github.com/zsais/go-gin-prometheus"
+	"github.com/segmentio/kafka-go"
+
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
+	"github.com/zsais/go-gin-prometheus"
 )
 
 // CONSTS
@@ -224,9 +225,9 @@ func (s *EventServer) verifyCaptcha(c *gin.Context) {
 		s.clicks[event.UserID] = value
 		s.clickchan <- event
 
-		if err := s.callAPI(event); err != nil {
-			log.Printf("Failed to call API for impression event: %v\n", err)
-		}
+		// if err := s.callAPI(event); err != nil {
+		// 	log.Printf("Failed to call API for impression event: %v\n", err)
+		// }
 	}
 	c.Redirect(http.StatusSeeOther, event.AdURL)
 
@@ -292,42 +293,42 @@ func (s *EventServer) handleClick(c *gin.Context) {
 		s.clicks[event.UserID] = value
 		s.clickchan <- event
 
-		if err := s.callAPI(event); err != nil {
-			log.Printf("Failed to call API for impression event: %v\n", err)
-		}
+		// if err := s.callAPI(event); err != nil {
+		// 	log.Printf("Failed to call API for impression event: %v\n", err)
+		// }
 	}
 
 	// Redirect to the ad URL
 	c.Redirect(http.StatusSeeOther, event.AdURL)
 }
 
-// callInternalAPI simulates calling an internal API to handle the click
-func (s *EventServer) callAPI(event Event) error {
-	url := fmt.Sprintf("https://panel.lontra.tech/api/v1/ads/%s/event", event.AdID)
-	payload := map[string]interface{}{
-		"publisher_id": event.PublisherID,
-		"event_type":   event.EventType,
-	}
-	body, _ := json.Marshal(payload)
+// // callInternalAPI simulates calling an internal API to handle the click
+// func (s *EventServer) callAPI(event Event) error {
+// 	url := fmt.Sprintf("https://panel.lontra.tech/api/v1/ads/%s/event", event.AdID)
+// 	payload := map[string]interface{}{
+// 		"publisher_id": event.PublisherID,
+// 		"event_type":   event.EventType,
+// 	}
+// 	body, _ := json.Marshal(payload)
 
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
-	if err != nil {
-		return fmt.Errorf("failed to marshal payload: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
+// 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
+// 	if err != nil {
+// 		return fmt.Errorf("failed to marshal payload: %v", err)
+// 	}
+// 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("request failed: %v", err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("received non-200 response: %d", resp.StatusCode)
-	}
-	fmt.Println("stat was 200")
-	return nil
-}
+// 	client := &http.Client{}
+// 	resp, err := client.Do(req)
+// 	if err != nil {
+// 		return fmt.Errorf("request failed: %v", err)
+// 	}
+// 	defer resp.Body.Close()
+// 	if resp.StatusCode != http.StatusOK {
+// 		return fmt.Errorf("received non-200 response: %d", resp.StatusCode)
+// 	}
+// 	fmt.Println("stat was 200")
+// 	return nil
+// }
 
 // processEvents processes events and sends them to Kafka
 func (s *EventServer) processEvents() {
