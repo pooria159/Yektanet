@@ -104,7 +104,7 @@ services:
       - "traefik.http.routers.publisher.tls=true"
       - "traefik.http.routers.publisher.entrypoints=websecure"
       - "traefik.http.routers.publisher.tls.certresolver=production"
-      - "traefik.http.services.publisher.loadbalancer.server.port=8089"
+      - "traefik.http.services.publisher.loadbalancer.server.port=9123"
       - "traefik.http.routers.publisher.rule=Host(`publisher.lontra.tech`)"
   reporter:
     image: allyellow/reporter:latest
@@ -121,7 +121,7 @@ services:
       - "traefik.http.routers.reporter.entrypoints=websecure"
       - "traefik.http.routers.reporter.tls.certresolver=production"
       - "traefik.http.services.reporter.loadbalancer.server.port=9999"
-      - "traefik.http.routers.publisher.rule=Host(`reporter.lontra.tech`)"
+      - "traefik.http.routers.reporter.rule=Host(`reporter.lontra.tech`)"
 
   pgadmin:
     image: registry.docker.ir/dpage/pgadmin4:latest
