@@ -97,7 +97,8 @@
           return date.toISOString().slice(0, 16).replace('T', ' ');
         }).reverse(),
         impressions: Array.from({ length: 24 }, () => Math.floor(Math.random() * 200) + 100),
-        clicks: Array.from({ length: 24 }, () => Math.floor(Math.random() * 50) + 10)
+        clicks: Array.from({ length: 24 }, () => Math.floor(Math.random() * 50) + 10),
+        ctr: Array.from({ length: 24 }, () => Math.floor(Math.random() * 100) + 10)
       },
       week: {
         labels: Array.from({ length: 7 }, (_, i) => {
@@ -106,7 +107,8 @@
           return date.toISOString().slice(0, 10);
         }).reverse(),
         impressions: Array.from({ length: 7 }, () => Math.floor(Math.random() * 1000) + 500),
-        clicks: Array.from({ length: 7 }, () => Math.floor(Math.random() * 200) + 50)
+        clicks: Array.from({ length: 7 }, () => Math.floor(Math.random() * 200) + 50),
+        ctr: Array.from({ length: 7 }, () => Math.floor(Math.random() * 100) + 10)
       }
     };
 
@@ -126,6 +128,14 @@
           data: [],
           backgroundColor: 'rgba(40, 167, 69, 0.5)',
           borderColor: 'rgba(40, 167, 69, 1)',
+          borderWidth: 2,
+          pointRadius: 8
+        },
+        {
+          label: 'CTR',
+          data: [],
+          backgroundColor: 'rgba(255, 99, 132, 0.5)',
+          borderColor: 'rgba(255, 99, 132, 1)',
           borderWidth: 2,
           pointRadius: 8
         }
