@@ -8,7 +8,7 @@ scrape_configs:
   
   - job_name: 'adserver'
     static_configs:
-      - targets: ['adserver:9090']
+      - targets: ['adserver:9095']
   
   - job_name: 'eventserver'
     static_configs:

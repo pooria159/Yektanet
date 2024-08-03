@@ -51,7 +51,7 @@ services:
       - "traefik.http.routers.adserver.tls=true"
       - "traefik.http.routers.adserver.entrypoints=websecure"
       - "traefik.http.routers.adserver.tls.certresolver=production"
-      - "traefik.http.services.adserver.loadbalancer.server.port=9090"
+      - "traefik.http.services.adserver.loadbalancer.server.port=9095"
       - "traefik.http.routers.adserver.rule=Host(`adserver.lontra.tech`)"
 
   eventserver:
